@@ -1,0 +1,43 @@
+@startuml
+actor Client
+participant "API Controller" as Controller
+participant "ServiceManager" as ServiceManager
+participant "DeviceService" as DeviceService
+participant "DeviceRepository" as DeviceRepository
+participant "Mapper" as Mapper
+database "Database" as DB
+
+Client -> Controller : GET /api/device/{id}
+activate Controller
+
+Controller -> ServiceManager : DeviceService.GetDeviceDetail(id)
+activate ServiceManager
+
+ServiceManager -> DeviceService : GetDeviceDetail(id)
+activate DeviceService
+
+DeviceService -> DeviceRepository : FindDeviceById(id)
+activate DeviceRepository
+
+DeviceRepository -> DB : Query device
+activate DB
+DB --> DeviceRepository : Return device data
+deactivate DB
+
+DeviceRepository --> DeviceService : Return Device
+deactivate DeviceRepository
+
+DeviceService -> Mapper : Map<DeviceDetailResponseModel>(device)
+activate Mapper
+Mapper --> DeviceService : Return mapped data
+deactivate Mapper
+
+DeviceService --> ServiceManager : Return DeviceDetailResponseModel
+deactivate DeviceService
+
+ServiceManager --> Controller : Return DeviceDetailResponseModel
+deactivate ServiceManager
+
+Controller --> Client : Return OK with device detail
+deactivate Controller
+@enduml

@@ -1,0 +1,76 @@
+@startuml
+class TaskController {
+  +GetTaskHistory(string taskId, TaskHistoryParameters): Task<IActionResult>
+}
+
+class TaskHistoryParameters {
+  +StartDate: DateTime?
+  +EndDate: DateTime?
+  +ActionType: string?
+}
+
+interface IServiceManager {
+  +TaskService: ITaskService
+  +AccountService: IAccountService
+  +ProjectService: IProjectService
+  +TaskListService: ITaskListService
+  +HistoryService: IHistoryService
+}
+
+interface ITaskService {
+  +GetTaskHistory(string taskId, TaskHistoryParameters): Task<(IEnumerable<TaskHistoryResponseModel>, MetaData)>
+}
+
+class TaskService {
+  -_repository: IRepositoryManager
+  -_mapper: IMapper
+  +GetTaskHistory(string taskId, TaskHistoryParameters): Task<(IEnumerable<TaskHistoryResponseModel>, MetaData)>
+}
+
+interface ITaskRepository {
+  +FindTaskHistoryById(string taskId, TaskHistoryParameters): Task<PagedList<TaskHistory>>
+}
+
+class TaskRepository {
+  +FindTaskHistoryById(string taskId, TaskHistoryParameters): Task<PagedList<TaskHistory>>
+}
+
+class PagedList<T> {
+  +MetaData: MetaData
+}
+
+class TaskHistory {
+  +TaskId: string
+  +Action: string
+  +ChangedBy: string
+  +ChangedAt: DateTime
+  +OldValue: string
+  +NewValue: string
+}
+
+class MetaData {
+  +CurrentPage: int
+  +TotalPages: int
+  +PageSize: int
+  +TotalCount: int
+}
+
+class TaskHistoryResponseModel {
+  +Action: string
+  +ChangedBy: string
+  +ChangedAt: DateTime
+  +OldValue: string
+  +NewValue: string
+}
+
+TaskController --> IServiceManager
+IServiceManager --> ITaskService
+TaskService ..|> ITaskService
+TaskService --> ITaskRepository
+TaskRepository ..|> ITaskRepository
+TaskRepository --> PagedList
+PagedList --> TaskHistory
+PagedList --> MetaData
+TaskService ..> TaskHistoryResponseModel
+
+@enduml

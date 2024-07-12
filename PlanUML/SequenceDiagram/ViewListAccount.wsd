@@ -1,0 +1,48 @@
+@startuml
+actor Client
+participant "AccountController" as AC
+participant "IServiceManager" as ISM
+participant "AccountService" as AS
+participant "AccountRepository" as AR
+participant "PagedList<Account>" as PL
+participant "Mapper" as M
+
+Client -> AC : GET /api/accounts
+activate AC
+
+AC -> ISM : AccountService.GetAccounts(param)
+activate ISM
+
+ISM -> AS : GetAccounts(param)
+activate AS
+
+AS -> AR : FindAll(param)
+activate AR
+
+AR -> AR : GetAll()
+AR -> AR : ApplyFilters()
+AR -> AR : ApplySort()
+AR -> PL : new PagedList<Account>()
+activate PL
+PL --> AR : PagedList<Account>
+deactivate PL
+
+AR --> AS : PagedList<Account>
+deactivate AR
+
+AS -> M : Map<AccountResponseModel>()
+activate M
+M --> AS : IEnumerable<AccountResponseModel>
+deactivate M
+
+AS --> ISM : (data, meta)
+deactivate AS
+
+ISM --> AC : (data, meta)
+deactivate ISM
+
+AC -> AC : Add X-Pagination header
+AC --> Client : 200 OK with data
+deactivate AC
+
+@enduml

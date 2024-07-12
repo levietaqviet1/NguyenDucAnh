@@ -1,0 +1,57 @@
+
+@startuml
+class ApiController {
+  +GetDeviceDetail(id: string): Task<IActionResult>
+}
+
+interface IServiceManager {
+  +DeviceService: IDeviceService
+  +UserService: IUserService
+  +AuthenticationService: IAuthenticationService
+  +LogService: ILogService
+}
+
+interface IDeviceService {
+  +GetDeviceDetail(id: string): Task<DeviceDetailResponseModel>
+}
+
+class DeviceService {
+  -_repository: IRepositoryManager
+  -_mapper: IMapper
+  +GetDeviceDetail(id: string): Task<DeviceDetailResponseModel>
+}
+
+interface IDeviceRepository {
+  +FindDeviceById(id: string): Task<Device>
+}
+
+class DeviceRepository {
+  +FindDeviceById(id: string): Task<Device>
+  -GetByCondition(Expression<Func<Device, bool>>, bool): IQueryable<Device>
+}
+
+class Device {
+  +Id: string
+  +Name: string
+  +Type: string
+  +Status: string
+  +LastUpdated: DateTime
+}
+
+class DeviceDetailResponseModel {
+  +Id: string
+  +Name: string
+  +Type: string
+  +Status: string
+  +LastUpdated: DateTime
+  +AdditionalInfo: Dictionary<string, string>
+}
+
+ApiController --> IServiceManager
+IServiceManager --> IDeviceService
+DeviceService ..|> IDeviceService
+DeviceService --> IDeviceRepository
+DeviceRepository ..|> IDeviceRepository
+DeviceRepository --> Device
+DeviceService --> DeviceDetailResponseModel
+@enduml

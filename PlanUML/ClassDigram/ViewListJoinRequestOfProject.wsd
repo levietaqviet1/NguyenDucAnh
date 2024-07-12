@@ -1,0 +1,89 @@
+@startuml
+class ProjectController {
+  +GetProjectJoinRequests(string projectId, JoinRequestParameters param): Task<IActionResult>
+}
+
+class JoinRequestParameters {
+  +SearchContent: string
+  +Status: JoinRequestStatus
+}
+
+enum JoinRequestStatus {
+  Pending
+  Accepted
+  Rejected
+}
+
+interface IServiceManager {
+  +ProjectService: IProjectService
+  +AccountService: IAccountService
+  +AuthenticationService: IAuthenticationService
+  +MailService: IMailService
+  +FileService: IFileService
+  +NewsService: INewsService
+  +NotificationService: INotificationService
+  +ScheduleService: IScheduleService
+  +TaskService: ITaskService
+  +TaskListService: ITaskListService
+  +MemberService: IMemberService
+}
+
+interface IProjectService {
+  +GetProjectJoinRequests(string projectId, JoinRequestParameters): Task<(IEnumerable<JoinRequestResponseModel>, MetaData)>
+}
+
+class ProjectService {
+  -_repository: IRepositoryManager
+  -_mapper: IMapper
+  +GetProjectJoinRequests(string projectId, JoinRequestParameters): Task<(IEnumerable<JoinRequestResponseModel>, MetaData)>
+}
+
+interface IProjectRepository {
+  +FindJoinRequestsForProject(string projectId, JoinRequestParameters): Task<PagedList<JoinRequest>>
+}
+
+class ProjectRepository {
+  +FindJoinRequestsForProject(string projectId, JoinRequestParameters): Task<PagedList<JoinRequest>>
+}
+
+class PagedList<T> {
+  +MetaData: MetaData
+}
+
+class JoinRequest {
+  +Id: string
+  +ProjectId: string
+  +UserId: string
+  +Status: JoinRequestStatus
+  +CreatedAt: DateTime
+  +UpdatedAt: DateTime
+}
+
+class MetaData {
+  +CurrentPage: int
+  +TotalPages: int
+  +PageSize: int
+  +TotalCount: int
+}
+
+class JoinRequestResponseModel {
+  +Id: string
+  +ProjectId: string
+  +UserId: string
+  +UserName: string
+  +Status: JoinRequestStatus
+  +CreatedAt: DateTime
+}
+
+ProjectController --> IServiceManager
+IServiceManager --> IProjectService
+ProjectService ..|> IProjectService
+ProjectService --> IProjectRepository
+ProjectRepository ..|> IProjectRepository
+ProjectRepository --> PagedList
+PagedList --> JoinRequest
+PagedList --> MetaData
+ProjectService ..> JoinRequestResponseModel
+JoinRequest --> JoinRequestStatus
+
+@enduml

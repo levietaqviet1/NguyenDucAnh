@@ -1,0 +1,63 @@
+@startuml
+actor Client
+participant "API Controller" as Controller
+participant "ServiceManager" as ServiceManager
+participant "BookingService" as BookingService
+participant "BookingRepository" as BookingRepository
+participant "Mapper" as Mapper
+database "Database" as DB
+
+Client -> Controller : POST /api/book-device
+activate Controller
+
+Controller -> ServiceManager : BookingService.BookDevice(param)
+activate ServiceManager
+
+ServiceManager -> BookingService : BookDevice(param)
+activate BookingService
+
+BookingService -> BookingRepository : CheckDeviceAvailability(deviceId, startDate, endDate)
+activate BookingRepository
+
+BookingRepository -> DB : Query device availability
+activate DB
+DB --> BookingRepository : Return availability status
+deactivate DB
+
+BookingRepository --> BookingService : Return availability status
+deactivate BookingRepository
+
+alt Device is available
+    BookingService -> BookingRepository : CreateBooking(param)
+    activate BookingRepository
+    
+    BookingRepository -> DB : Insert new booking
+    activate DB
+    DB --> BookingRepository : Return created booking
+    deactivate DB
+    
+    BookingRepository --> BookingService : Return Booking object
+    deactivate BookingRepository
+    
+    BookingService -> Mapper : Map<BookingResponseModel>(booking)
+    activate Mapper
+    Mapper --> BookingService : Return mapped data
+    deactivate Mapper
+    
+    BookingService --> ServiceManager : Return (bookingResponseModel, metadata)
+else Device is not available
+    BookingService --> ServiceManager : Throw DeviceNotAvailableException
+end
+
+ServiceManager --> Controller : Return result or exception
+deactivate BookingService
+deactivate ServiceManager
+
+alt Booking successful
+    Controller -> Controller : Add X-Metadata header
+    Controller --> Client : Return OK with booking data
+else Booking failed
+    Controller --> Client : Return Error response
+end
+deactivate Controller
+@enduml

@@ -1,0 +1,79 @@
+@startuml
+class ProjectController {
+  +CreateProject(CreateProjectDto): Task<IActionResult>
+}
+
+class CreateProjectDto {
+  +Name: string
+  +Description: string
+  +StartDate: DateTime
+  +EndDate: DateTime
+  +ManagerId: string
+}
+
+interface IServiceManager {
+  +ProjectService: IProjectService
+  +AccountService: IAccountService
+  +TaskService: ITaskService
+  +...
+}
+
+interface IProjectService {
+  +CreateProject(CreateProjectDto): Task<ProjectResponseDto>
+}
+
+class ProjectService {
+  -_repository: IRepositoryManager
+  -_mapper: IMapper
+  +CreateProject(CreateProjectDto): Task<ProjectResponseDto>
+}
+
+interface IProjectRepository {
+  +CreateProject(Project): Task<Project>
+}
+
+class ProjectRepository {
+  +CreateProject(Project): Task<Project>
+}
+
+class Project {
+  +Id: string
+  +Name: string
+  +Description: string
+  +StartDate: DateTime
+  +EndDate: DateTime
+  +ManagerId: string
+  +Status: ProjectStatus
+  +CreatedAt: DateTime
+  +UpdatedAt: DateTime
+}
+
+enum ProjectStatus {
+  NotStarted
+  InProgress
+  Completed
+  OnHold
+  Cancelled
+}
+
+class ProjectResponseDto {
+  +Id: string
+  +Name: string
+  +Description: string
+  +StartDate: DateTime
+  +EndDate: DateTime
+  +ManagerId: string
+  +Status: ProjectStatus
+}
+
+ProjectController --> IServiceManager
+IServiceManager --> IProjectService
+ProjectService ..|> IProjectService
+ProjectService --> IProjectRepository
+ProjectRepository ..|> IProjectRepository
+ProjectRepository --> Project
+Project --> ProjectStatus
+ProjectService ..> CreateProjectDto
+ProjectService ..> ProjectResponseDto
+
+@enduml

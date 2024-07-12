@@ -1,0 +1,77 @@
+@startuml
+class ApiController {
+  +GetJoinLabRequests(JoinLabRequestParameters): Task<IActionResult>
+}
+
+class JoinLabRequestParameters {
+  +SearchContent: string
+  +LabId: string
+  +Status: JoinLabRequestStatus
+}
+
+interface IServiceManager {
+  +LabRequestService: ILabRequestService
+  +AccountService: IAccountService
+  +LabService: ILabService
+  +NotificationService: INotificationService
+}
+
+interface ILabRequestService {
+  +GetJoinLabRequests(JoinLabRequestParameters): Task<(IEnumerable<JoinLabRequestResponseModel>, MetaData)>
+}
+
+class LabRequestService {
+  -_repository: IRepositoryManager
+  -_mapper: IMapper
+  +GetJoinLabRequests(JoinLabRequestParameters): Task<(IEnumerable<JoinLabRequestResponseModel>, MetaData)>
+}
+
+interface ILabRequestRepository {
+  +FindJoinLabRequests(JoinLabRequestParameters): Task<PagedList<JoinLabRequest>>
+}
+
+class LabRequestRepository {
+  +FindJoinLabRequests(JoinLabRequestParameters): Task<PagedList<JoinLabRequest>>
+  -GetByCondition(Expression<Func<JoinLabRequest, bool>>, bool): IQueryable<JoinLabRequest>
+}
+
+class PagedList<T> {
+  +MetaData: MetaData
+}
+
+class JoinLabRequest {
+  +Id: string
+  +LabId: string
+  +UserId: string
+  +Status: JoinLabRequestStatus
+  +CreatedAt: DateTime
+}
+
+class JoinLabRequestResponseModel {
+  +Id: string
+  +LabId: string
+  +UserId: string
+  +Status: JoinLabRequestStatus
+  +CreatedAt: DateTime
+  +UserName: string
+  +LabName: string
+}
+
+enum JoinLabRequestStatus {
+  Pending
+  Approved
+  Rejected
+}
+
+ApiController --> IServiceManager
+IServiceManager --> ILabRequestService
+LabRequestService ..|> ILabRequestService
+LabRequestService --> ILabRequestRepository
+LabRequestRepository ..|> ILabRequestRepository
+LabRequestRepository --> PagedList
+PagedList --> JoinLabRequest
+LabRequestService --> JoinLabRequestResponseModel
+ApiController --> JoinLabRequestParameters
+JoinLabRequest --> JoinLabRequestStatus
+JoinLabRequestResponseModel --> JoinLabRequestStatus
+@enduml

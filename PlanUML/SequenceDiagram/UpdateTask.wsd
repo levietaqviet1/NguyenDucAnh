@@ -1,0 +1,43 @@
+@startuml
+actor Client
+participant "TaskController" as TC
+participant "IServiceManager" as ISM
+participant "TaskService" as TS
+participant "TaskRepository" as TR
+participant "Task" as T
+participant "Mapper" as M
+
+Client -> TC : PUT /api/tasks/{id}
+activate TC
+
+TC -> ISM : TaskService.UpdateTask(id, updateTaskDto)
+activate ISM
+
+ISM -> TS : UpdateTask(id, updateTaskDto)
+activate TS
+
+TS -> TR : GetTaskById(id)
+activate TR
+TR --> TS : Task
+deactivate TR
+
+TS -> M : Map(updateTaskDto, existingTask)
+activate M
+M --> TS : Updated Task
+deactivate M
+
+TS -> TR : UpdateTask(updatedTask)
+activate TR
+TR --> TS : void
+deactivate TR
+
+TS --> ISM : UpdatedTaskResponseDto
+deactivate TS
+
+ISM --> TC : UpdatedTaskResponseDto
+deactivate ISM
+
+TC --> Client : 200 OK with updated task data
+deactivate TC
+
+@enduml

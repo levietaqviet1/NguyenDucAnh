@@ -1,0 +1,53 @@
+@startuml
+actor "Project Manager" as PM
+participant "API Controller" as Controller
+participant "ServiceManager" as ServiceManager
+participant "NotificationService" as NotificationService
+participant "ProjectService" as ProjectService
+participant "MemberService" as MemberService
+participant "NotificationRepository" as NotificationRepository
+database "Database" as DB
+
+PM -> Controller : POST /api/send-project-notification
+activate Controller
+
+Controller -> ServiceManager : NotificationService.SendProjectNotification(projectId, message)
+activate ServiceManager
+
+ServiceManager -> NotificationService : SendProjectNotification(projectId, message)
+activate NotificationService
+
+NotificationService -> ProjectService : GetProjectById(projectId)
+activate ProjectService
+ProjectService -> DB : Query project
+DB --> ProjectService : Return project data
+ProjectService --> NotificationService : Return project
+deactivate ProjectService
+
+NotificationService -> MemberService : GetProjectMembers(projectId)
+activate MemberService
+MemberService -> DB : Query project members
+DB --> MemberService : Return members data
+MemberService --> NotificationService : Return project members
+deactivate MemberService
+
+loop for each member
+    NotificationService -> NotificationService : CreateNotification(member, message)
+end
+
+NotificationService -> NotificationRepository : SaveNotifications(notifications)
+activate NotificationRepository
+NotificationRepository -> DB : Save notifications
+DB --> NotificationRepository : Confirm save
+NotificationRepository --> NotificationService : Return result
+deactivate NotificationRepository
+
+NotificationService --> ServiceManager : Return result
+deactivate NotificationService
+
+ServiceManager --> Controller : Return result
+deactivate ServiceManager
+
+Controller --> PM : Return success response
+deactivate Controller
+@enduml

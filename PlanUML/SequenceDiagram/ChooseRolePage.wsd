@@ -1,0 +1,72 @@
+@startuml
+actor User
+participant "ChooseRoleController" as Controller
+participant "ServiceManager" as ServiceManager
+participant "RoleService" as RoleService
+participant "RoleRepository" as RoleRepository
+database "Database" as DB
+
+== Get Available Roles ==
+
+User -> Controller : GET /api/roles/available
+activate Controller
+
+Controller -> ServiceManager : RoleService.GetAvailableRoles()
+activate ServiceManager
+
+ServiceManager -> RoleService : GetAvailableRoles()
+activate RoleService
+
+RoleService -> RoleRepository : GetAllRoles()
+activate RoleRepository
+
+RoleRepository -> DB : Query roles
+activate DB
+DB --> RoleRepository : Return roles data
+deactivate DB
+
+RoleRepository --> RoleService : Return IEnumerable<Role>
+deactivate RoleRepository
+
+RoleService -> RoleService : Map Role to RoleDto
+RoleService --> ServiceManager : Return IEnumerable<RoleDto>
+deactivate RoleService
+
+ServiceManager --> Controller : Return IEnumerable<RoleDto>
+deactivate ServiceManager
+
+Controller --> User : Return OK with available roles
+deactivate Controller
+
+== Select Role ==
+
+User -> Controller : POST /api/roles/select
+activate Controller
+
+Controller -> ServiceManager : RoleService.AssignRoleToUser(userId, roleId)
+activate ServiceManager
+
+ServiceManager -> RoleService : AssignRoleToUser(userId, roleId)
+activate RoleService
+
+RoleService -> RoleRepository : AssignRoleToUser(userId, roleId)
+activate RoleRepository
+
+RoleRepository -> DB : Update user role
+activate DB
+DB --> RoleRepository : Confirm update
+deactivate DB
+
+RoleRepository --> RoleService : Return success status
+deactivate RoleRepository
+
+RoleService --> ServiceManager : Return success status
+deactivate RoleService
+
+ServiceManager --> Controller : Return success status
+deactivate ServiceManager
+
+Controller --> User : Return OK with success message
+deactivate Controller
+
+@enduml

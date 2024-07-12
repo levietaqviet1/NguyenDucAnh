@@ -1,0 +1,47 @@
+                                                                    @startuml
+actor Client
+participant "ReportController" as Controller
+participant "ServiceManager" as ServiceManager
+participant "ReportService" as ReportService
+participant "ReportRepository" as ReportRepository
+participant "Mapper" as Mapper
+database "Database" as DB
+
+Client -> Controller : GET /api/reports
+activate Controller
+
+Controller -> ServiceManager : ReportService.GetReportList(param)
+activate ServiceManager
+
+ServiceManager -> ReportService : GetReportList(param)
+activate ReportService
+
+ReportService -> ReportRepository : FindReports(param)
+activate ReportRepository
+
+ReportRepository -> ReportRepository : GetByCondition()
+ReportRepository -> ReportRepository : ApplyFilters(param)
+ReportRepository -> DB : Query reports
+activate DB
+DB --> ReportRepository : Return reports data
+deactivate DB
+
+ReportRepository -> ReportRepository : Create PagedList<Report>
+ReportRepository --> ReportService : Return PagedList<Report>
+deactivate ReportRepository
+
+ReportService -> Mapper : Map<ReportListResponseModel>(reports)
+activate Mapper
+Mapper --> ReportService : Return mapped data
+deactivate Mapper
+
+ReportService --> ServiceManager : Return (data, metadata)
+deactivate ReportService
+
+ServiceManager --> Controller : Return (data, metadata)
+deactivate ServiceManager
+
+Controller -> Controller : Add X-Pagination header
+Controller --> Client : Return OK with report list data
+deactivate Controller
+@enduml

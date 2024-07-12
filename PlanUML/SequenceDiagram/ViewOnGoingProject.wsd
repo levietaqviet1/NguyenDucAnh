@@ -1,0 +1,47 @@
+@startuml
+actor Client
+participant "ProjectController" as PC
+participant "IServiceManager" as ISM
+participant "ProjectService" as PS
+participant "ProjectRepository" as PR
+participant "PagedList<Project>" as PL
+participant "Mapper" as M
+
+Client -> PC : GET /api/projects/ongoing
+activate PC
+
+PC -> ISM : ProjectService.GetOngoingProjects(param)
+activate ISM
+
+ISM -> PS : GetOngoingProjects(param)
+activate PS
+
+PS -> PR : FindOngoingProjects(param)
+activate PR
+
+PR -> PR : GetByCondition()
+PR -> PR : Search()
+PR -> PL : new PagedList<Project>()
+activate PL
+PL --> PR : PagedList<Project>
+deactivate PL
+
+PR --> PS : PagedList<Project>
+deactivate PR
+
+PS -> M : Map<OngoingProjectResponseModel>()
+activate M
+M --> PS : IEnumerable<OngoingProjectResponseModel>
+deactivate M
+
+PS --> ISM : (data, meta)
+deactivate PS
+
+ISM --> PC : (data, meta)
+deactivate ISM
+
+PC -> PC : Add X-Pagination header
+PC --> Client : 200 OK with data
+deactivate PC
+
+@enduml

@@ -1,0 +1,56 @@
+@startuml
+class TaskController {
+  +DeleteTask(int id): Task<IActionResult>
+}
+
+interface IServiceManager {
+  +TaskService: ITaskService
+}
+
+interface ITaskService {
+  +DeleteTask(int id): Task<bool>
+}
+
+class TaskService {
+  -_repository: IRepositoryManager
+  -_logger: ILoggerManager
+  +DeleteTask(int id): Task<bool>
+}
+
+interface IRepositoryManager {
+  +Task: ITaskRepository
+}
+
+interface ITaskRepository {
+  +GetTaskById(int id): Task<Task>
+  +DeleteTask(Task task): Task<bool>
+}
+
+class TaskRepository {
+  +GetTaskById(int id): Task<Task>
+  +DeleteTask(Task task): Task<bool>
+}
+
+class Task {
+  +Id: int
+  +Title: string
+  +Description: string
+  +DueDate: DateTime
+  +IsCompleted: bool
+  +IsDeleted: bool
+  +MarkAsDeleted(): void
+}
+
+class NotFoundException {
+}
+
+TaskController --> IServiceManager
+IServiceManager --> ITaskService
+TaskService ..|> ITaskService
+TaskService --> IRepositoryManager
+IRepositoryManager --> ITaskRepository
+TaskRepository ..|> ITaskRepository
+TaskRepository --> Task
+TaskService ..> NotFoundException
+
+@enduml

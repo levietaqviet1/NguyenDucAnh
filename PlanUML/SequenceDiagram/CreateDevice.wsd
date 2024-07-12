@@ -1,0 +1,48 @@
+@startuml
+actor Client
+participant "API Controller" as Controller
+participant "ServiceManager" as ServiceManager
+participant "DeviceService" as DeviceService
+participant "DeviceRepository" as DeviceRepository
+participant "Mapper" as Mapper
+database "Database" as DB
+
+Client -> Controller : POST /api/create-device
+activate Controller
+
+Controller -> ServiceManager : DeviceService.CreateDevice(deviceDto)
+activate ServiceManager
+
+ServiceManager -> DeviceService : CreateDevice(deviceDto)
+activate DeviceService
+
+DeviceService -> Mapper : Map<Device>(deviceDto)
+activate Mapper
+Mapper --> DeviceService : Return mapped Device
+deactivate Mapper
+
+DeviceService -> DeviceRepository : CreateDevice(device)
+activate DeviceRepository
+
+DeviceRepository -> DB : Insert new device
+activate DB
+DB --> DeviceRepository : Confirm insertion
+deactivate DB
+
+DeviceRepository --> DeviceService : Return created device
+deactivate DeviceRepository
+
+DeviceService -> Mapper : Map<DeviceResponseDto>(createdDevice)
+activate Mapper
+Mapper --> DeviceService : Return mapped response
+deactivate Mapper
+
+DeviceService --> ServiceManager : Return DeviceResponseDto
+deactivate DeviceService
+
+ServiceManager --> Controller : Return DeviceResponseDto
+deactivate ServiceManager
+
+Controller --> Client : Return Created with device data
+deactivate Controller
+@enduml

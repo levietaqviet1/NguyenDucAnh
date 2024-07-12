@@ -1,0 +1,90 @@
+@startuml
+class TaskController {
+  +CreateTask(CreateTaskDto): Task<IActionResult>
+}
+
+class CreateTaskDto {
+  +Title: string
+  +Description: string
+  +DueDate: DateTime
+  +Priority: TaskPriority
+  +ProjectId: Guid
+  +AssigneeId: Guid?
+}
+
+interface IServiceManager {
+  +TaskService: ITaskService
+  +ProjectService: IProjectService
+  +UserService: IUserService
+}
+
+interface ITaskService {
+  +CreateTask(CreateTaskDto): Task<TaskResponseDto>
+}
+
+class TaskService {
+  -_repository: IRepositoryManager
+  -_mapper: IMapper
+  +CreateTask(CreateTaskDto): Task<TaskResponseDto>
+}
+
+interface ITaskRepository {
+  +CreateTask(Task): Task<Task>
+}
+
+class TaskRepository {
+  +CreateTask(Task): Task<Task>
+}
+
+class Task {
+  +Id: Guid
+  +Title: string
+  +Description: string
+  +CreatedAt: DateTime
+  +UpdatedAt: DateTime
+  +DueDate: DateTime
+  +Status: TaskStatus
+  +Priority: TaskPriority
+  +ProjectId: Guid
+  +AssigneeId: Guid?
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  DONE
+}
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+class TaskResponseDto {
+  +Id: Guid
+  +Title: string
+  +Description: string
+  +CreatedAt: DateTime
+  +UpdatedAt: DateTime
+  +DueDate: DateTime
+  +Status: TaskStatus
+  +Priority: TaskPriority
+  +ProjectId: Guid
+  +AssigneeId: Guid?
+  +ProjectName: string
+  +AssigneeName: string?
+}
+
+TaskController --> IServiceManager
+IServiceManager --> ITaskService
+TaskService ..|> ITaskService
+TaskService --> ITaskRepository
+TaskRepository ..|> ITaskRepository
+TaskRepository --> Task
+Task --> TaskStatus
+Task --> TaskPriority
+TaskService ..> CreateTaskDto
+TaskService ..> TaskResponseDto
+
+@enduml

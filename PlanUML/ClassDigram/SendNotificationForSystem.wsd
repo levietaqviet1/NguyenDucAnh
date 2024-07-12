@@ -1,0 +1,79 @@
+@startuml
+class NotificationController {
+  +SendSystemNotification(SystemNotificationParameters): Task<IActionResult>
+}
+
+class SystemNotificationParameters {
+  +Title: string
+  +Message: string
+  +Recipients: List<string>
+  +Priority: NotificationPriority
+}
+
+enum NotificationPriority {
+  Low
+  Medium
+  High
+}
+
+interface IServiceManager {
+  +NotificationService: INotificationService
+  +UserService: IUserService
+}
+
+interface INotificationService {
+  +SendSystemNotification(SystemNotificationParameters): Task<NotificationResult>
+}
+
+class NotificationService {
+  -_repository: IRepositoryManager
+  -_userService: IUserService
+  +SendSystemNotification(SystemNotificationParameters): Task<NotificationResult>
+}
+
+interface INotificationRepository {
+  +CreateNotification(Notification): Task<Notification>
+  +SaveChanges(): Task
+}
+
+class NotificationRepository {
+  +CreateNotification(Notification): Task<Notification>
+  +SaveChanges(): Task
+}
+
+interface IUserService {
+  +GetUserDeviceTokens(List<string>): Task<List<string>>
+}
+
+class UserService {
+  +GetUserDeviceTokens(List<string>): Task<List<string>>
+}
+
+class Notification {
+  +Id: Guid
+  +Title: string
+  +Message: string
+  +Priority: NotificationPriority
+  +CreatedAt: DateTime
+  +Recipients: List<string>
+}
+
+class NotificationResult {
+  +Success: bool
+  +Message: string
+  +NotificationId: Guid?
+}
+
+NotificationController --> IServiceManager
+IServiceManager --> INotificationService
+IServiceManager --> IUserService
+NotificationService ..|> INotificationService
+NotificationService --> INotificationRepository
+NotificationService --> IUserService
+NotificationRepository ..|> INotificationRepository
+UserService ..|> IUserService
+NotificationController --> SystemNotificationParameters
+SystemNotificationParameters --> NotificationPriority
+NotificationService --> Notification
+NotificationService --> NotificationResult
+@enduml

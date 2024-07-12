@@ -1,0 +1,51 @@
+@startuml
+actor Client
+participant "ProjectController" as PC
+participant "IServiceManager" as ISM
+participant "ProjectService" as PS
+participant "ProjectRepository" as PR
+participant "Project" as P
+participant "Mapper" as M
+
+Client -> PC : POST /api/projects
+activate PC
+
+PC -> ISM : ProjectService.CreateProject(projectDto)
+activate ISM
+
+ISM -> PS : CreateProject(projectDto)
+activate PS
+
+PS -> M : Map<Project>(projectDto)
+activate M
+M --> PS : Project
+deactivate M
+
+PS -> PR : CreateProject(project)
+activate PR
+
+PR -> P : new Project()
+activate P
+P --> PR : Project
+deactivate P
+
+PR -> PR : Add(project)
+PR -> PR : SaveChanges()
+PR --> PS : Project
+deactivate PR
+
+PS -> M : Map<ProjectResponseDto>(project)
+activate M
+M --> PS : ProjectResponseDto
+deactivate M
+
+PS --> ISM : ProjectResponseDto
+deactivate PS
+
+ISM --> PC : ProjectResponseDto
+deactivate ISM
+
+PC --> Client : 201 Created with ProjectResponseDto
+deactivate PC
+
+@enduml

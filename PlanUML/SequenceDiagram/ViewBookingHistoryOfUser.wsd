@@ -1,0 +1,47 @@
+@startuml
+actor User
+participant "API Controller" as Controller
+participant "ServiceManager" as ServiceManager
+participant "BookingService" as BookingService
+participant "BookingRepository" as BookingRepository
+participant "Mapper" as Mapper
+database "Database" as DB
+
+User -> Controller : GET /api/booking-history
+activate Controller
+
+Controller -> ServiceManager : BookingService.GetUserBookingHistory(param)
+activate ServiceManager
+
+ServiceManager -> BookingService : GetUserBookingHistory(param)
+activate BookingService
+
+BookingService -> BookingRepository : FindUserBookingHistory(param)
+activate BookingRepository
+
+BookingRepository -> BookingRepository : GetByCondition()
+BookingRepository -> BookingRepository : Search(param)
+BookingRepository -> DB : Query booking history
+activate DB
+DB --> BookingRepository : Return booking data
+deactivate DB
+
+BookingRepository -> BookingRepository : Create PagedList<Booking>
+BookingRepository --> BookingService : Return PagedList<Booking>
+deactivate BookingRepository
+
+BookingService -> Mapper : Map<BookingHistoryResponseModel>(bookings)
+activate Mapper
+Mapper --> BookingService : Return mapped data
+deactivate Mapper
+
+BookingService --> ServiceManager : Return (data, metadata)
+deactivate BookingService
+
+ServiceManager --> Controller : Return (data, metadata)
+deactivate ServiceManager
+
+Controller -> Controller : Add X-Pagination header
+Controller --> User : Return OK with booking history data
+deactivate Controller
+@enduml

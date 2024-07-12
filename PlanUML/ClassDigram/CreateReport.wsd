@@ -1,0 +1,89 @@
+@startuml
+class ApiController {
+  +CreateReport(CreateReportDto): Task<IActionResult>
+}
+
+class CreateReportDto {
+  +Title: string
+  +Content: string
+  +ProjectId: string
+  +UserId: string
+}
+
+interface IServiceManager {
+  +ReportService: IReportService
+  +ProjectService: IProjectService
+  +UserService: IUserService
+}
+
+interface IReportService {
+  +CreateReport(CreateReportDto): Task<ReportResponseDto>
+}
+
+class ReportService {
+  -_repository: IRepositoryManager
+  -_mapper: IMapper
+  -_projectService: IProjectService
+  -_userService: IUserService
+  +CreateReport(CreateReportDto): Task<ReportResponseDto>
+}
+
+interface IReportRepository {
+  +CreateReport(Report): Task<Report>
+}
+
+class ReportRepository {
+  +CreateReport(Report): Task<Report>
+}
+
+interface IProjectService {
+  +GetProject(string): Task<Project>
+}
+
+interface IUserService {
+  +GetUser(string): Task<User>
+}
+
+class Report {
+  +Id: string
+  +Title: string
+  +Content: string
+  +CreatedAt: DateTime
+  +Project: Project
+  +User: User
+}
+
+class Project {
+  +Id: string
+  +Name: string
+}
+
+class User {
+  +Id: string
+  +Name: string
+}
+
+class ReportResponseDto {
+  +Id: string
+  +Title: string
+  +Content: string
+  +CreatedAt: DateTime
+  +ProjectName: string
+  +UserName: string
+}
+
+ApiController --> IServiceManager
+IServiceManager --> IReportService
+IServiceManager --> IProjectService
+IServiceManager --> IUserService
+ReportService ..|> IReportService
+ReportService --> IReportRepository
+ReportService --> IProjectService
+ReportService --> IUserService
+ReportRepository ..|> IReportRepository
+ApiController --> CreateReportDto
+ReportService --> Report
+Report --> Project
+Report --> User
+ReportService --> ReportResponseDto
+@enduml

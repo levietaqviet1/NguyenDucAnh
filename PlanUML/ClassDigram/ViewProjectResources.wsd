@@ -1,0 +1,82 @@
+@startuml
+class ProjectController {
+  +GetProjectResources(string projectId, ResourceParameters param): Task<IActionResult>
+}
+
+class ResourceParameters {
+  +SearchContent: string
+  +ResourceType: string
+}
+
+interface IServiceManager {
+  +ProjectService: IProjectService
+  +ResourceService: IResourceService
+  +UserService: IUserService
+  +TaskService: ITaskService
+  +DocumentService: IDocumentService
+}
+
+interface IProjectService {
+  +GetProjectResources(string projectId, ResourceParameters): Task<(IEnumerable<ProjectResourceResponseModel>, MetaData)>
+}
+
+class ProjectService {
+  -_repository: IRepositoryManager
+  -_mapper: IMapper
+  +GetProjectResources(string projectId, ResourceParameters): Task<(IEnumerable<ProjectResourceResponseModel>, MetaData)>
+}
+
+interface IProjectRepository {
+  +FindProjectResources(string projectId, ResourceParameters): Task<PagedList<ProjectResource>>
+}
+
+class ProjectRepository {
+  +FindProjectResources(string projectId, ResourceParameters): Task<PagedList<ProjectResource>>
+}
+
+class PagedList<T> {
+  +MetaData: MetaData
+}
+
+class ProjectResource {
+  +Id: string
+  +ProjectId: string
+  +Name: string
+  +Type: ResourceType
+  +Quantity: int
+  +AssignedTo: string
+}
+
+enum ResourceType {
+  HUMAN
+  MATERIAL
+  EQUIPMENT
+}
+
+class MetaData {
+  +CurrentPage: int
+  +TotalPages: int
+  +PageSize: int
+  +TotalCount: int
+}
+
+class ProjectResourceResponseModel {
+  +Id: string
+  +Name: string
+  +Type: ResourceType
+  +Quantity: int
+  +AssignedTo: string
+}
+
+ProjectController --> IServiceManager
+IServiceManager --> IProjectService
+ProjectService ..|> IProjectService
+ProjectService --> IProjectRepository
+ProjectRepository ..|> IProjectRepository
+ProjectRepository --> PagedList
+PagedList --> ProjectResource
+PagedList --> MetaData
+ProjectService ..> ProjectResourceResponseModel
+ProjectResource --> ResourceType
+
+@enduml

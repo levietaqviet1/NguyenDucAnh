@@ -1,0 +1,92 @@
+@startuml
+class ProjectController {
+  +GetOngoingProjects(OngoingProjectParameters): Task<IActionResult>
+}
+
+class OngoingProjectParameters {
+  +SearchContent: string
+  +StartDate: DateTime?
+  +EndDate: DateTime?
+}
+
+interface IServiceManager {
+  +ProjectService: IProjectService
+  +AccountService: IAccountService
+  +AuthenticationService: IAuthenticationService
+  +MailService: IMailService
+  +FileService: IFileService
+  +NewsService: INewsService
+  +NotificationService: INotificationService
+  +ScheduleService: IScheduleService
+  +TaskService: ITaskService
+  +TaskListService: ITaskListService
+  +MemberService: IMemberService
+}
+
+interface IProjectService {
+  +GetOngoingProjects(OngoingProjectParameters): Task<(IEnumerable<OngoingProjectResponseModel>, MetaData)>
+}
+
+class ProjectService {
+  -_repository: IRepositoryManager
+  -_mapper: IMapper
+  +GetOngoingProjects(OngoingProjectParameters): Task<(IEnumerable<OngoingProjectResponseModel>, MetaData)>
+}
+
+interface IProjectRepository {
+  +FindOngoingProjects(OngoingProjectParameters): Task<PagedList<Project>>
+}
+
+class ProjectRepository {
+  +FindOngoingProjects(OngoingProjectParameters): Task<PagedList<Project>>
+}
+
+class PagedList<T> {
+  +MetaData: MetaData
+}
+
+class Project {
+  +Id: string
+  +Name: string
+  +Description: string
+  +StartDate: DateTime
+  +EndDate: DateTime
+  +Status: ProjectStatus
+}
+
+enum ProjectStatus {
+  NotStarted
+  InProgress
+  Completed
+  OnHold
+}
+
+class MetaData {
+  +CurrentPage: int
+  +TotalPages: int
+  +PageSize: int
+  +TotalCount: int
+}
+
+class OngoingProjectResponseModel {
+  +Id: string
+  +Name: string
+  +Description: string
+  +StartDate: DateTime
+  +EndDate: DateTime
+  +Status: ProjectStatus
+  +Progress: double
+}
+
+ProjectController --> IServiceManager
+IServiceManager --> IProjectService
+ProjectService ..|> IProjectService
+ProjectService --> IProjectRepository
+ProjectRepository ..|> IProjectRepository
+ProjectRepository --> PagedList
+PagedList --> Project
+PagedList --> MetaData
+ProjectService ..> OngoingProjectResponseModel
+Project --> ProjectStatus
+
+@enduml

@@ -1,0 +1,64 @@
+@startuml
+class ApiController {
+  +DisableDevice(string deviceId): Task<IActionResult>
+}
+
+interface IServiceManager {
+  +DeviceService: IDeviceService
+  +UserService: IUserService
+  +AuthenticationService: IAuthenticationService
+  +NotificationService: INotificationService
+}
+
+interface IDeviceService {
+  +DisableDevice(string deviceId): Task<DeviceResponseModel>
+  +GetDeviceById(string deviceId): Task<DeviceResponseModel>
+}
+
+class DeviceService {
+  -_repository: IRepositoryManager
+  -_mapper: IMapper
+  +DisableDevice(string deviceId): Task<DeviceResponseModel>
+  +GetDeviceById(string deviceId): Task<DeviceResponseModel>
+}
+
+interface IDeviceRepository {
+  +FindDeviceById(string deviceId): Task<Device>
+  +UpdateDevice(Device device): Task<Device>
+}
+
+class DeviceRepository {
+  +FindDeviceById(string deviceId): Task<Device>
+  +UpdateDevice(Device device): Task<Device>
+}
+
+class Device {
+  +Id: string
+  +Name: string
+  +Status: DeviceStatus
+  +LastActiveDate: DateTime
+  +DisableDevice(): void
+}
+
+enum DeviceStatus {
+  ACTIVE
+  DISABLED
+  MAINTENANCE
+}
+
+class DeviceResponseModel {
+  +Id: string
+  +Name: string
+  +Status: string
+  +LastActiveDate: DateTime
+}
+
+ApiController --> IServiceManager
+IServiceManager --> IDeviceService
+DeviceService ..|> IDeviceService
+DeviceService --> IDeviceRepository
+DeviceRepository ..|> IDeviceRepository
+DeviceRepository --> Device
+Device --> DeviceStatus
+DeviceService --> DeviceResponseModel
+@enduml

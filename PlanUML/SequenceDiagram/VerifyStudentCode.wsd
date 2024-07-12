@@ -1,0 +1,55 @@
+@startuml
+actor Admin
+participant "API Controller" as Controller
+participant "ServiceManager" as ServiceManager
+participant "StudentService" as StudentService
+participant "StudentRepository" as StudentRepository
+participant "Mapper" as Mapper
+database "Database" as DB
+
+Admin -> Controller : POST /api/verify-student-code
+activate Controller
+
+Controller -> ServiceManager : StudentService.VerifyStudentCode(verifyRequest)
+activate ServiceManager
+
+ServiceManager -> StudentService : VerifyStudentCode(verifyRequest)
+activate StudentService
+
+StudentService -> StudentRepository : FindStudentByCode(verifyRequest.StudentCode)
+activate StudentRepository
+
+StudentRepository -> DB : Query student
+activate DB
+DB --> StudentRepository : Return student data
+deactivate DB
+
+StudentRepository --> StudentService : Return Student
+deactivate StudentRepository
+
+StudentService -> StudentService : Validate student data
+StudentService -> StudentRepository : UpdateStudentVerificationStatus(student.Id, true)
+activate StudentRepository
+
+StudentRepository -> DB : Update student verification status
+activate DB
+DB --> StudentRepository : Confirm update
+deactivate DB
+
+StudentRepository --> StudentService : Return updated Student
+deactivate StudentRepository
+
+StudentService -> Mapper : Map<StudentVerificationResponseModel>(updatedStudent)
+activate Mapper
+Mapper --> StudentService : Return mapped data
+deactivate Mapper
+
+StudentService --> ServiceManager : Return verification result
+deactivate StudentService
+
+ServiceManager --> Controller : Return verification result
+deactivate ServiceManager
+
+Controller --> Admin : Return OK with verification result
+deactivate Controller
+@enduml

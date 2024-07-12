@@ -1,0 +1,60 @@
+@startuml
+actor Client
+participant "API Controller" as Controller
+participant "ServiceManager" as ServiceManager
+participant "ReportService" as ReportService
+participant "ReportRepository" as ReportRepository
+participant "ProjectService" as ProjectService
+participant "UserService" as UserService
+participant "Mapper" as Mapper
+database "Database" as DB
+
+Client -> Controller : POST /api/create-report
+activate Controller
+
+Controller -> ServiceManager : ReportService.CreateReport(reportDto)
+activate ServiceManager
+
+ServiceManager -> ReportService : CreateReport(reportDto)
+activate ReportService
+
+ReportService -> ProjectService : GetProject(reportDto.ProjectId)
+activate ProjectService
+ProjectService --> ReportService : Return Project
+deactivate ProjectService
+
+ReportService -> UserService : GetUser(reportDto.UserId)
+activate UserService
+UserService --> ReportService : Return User
+deactivate UserService
+
+ReportService -> Mapper : Map<Report>(reportDto)
+activate Mapper
+Mapper --> ReportService : Return Report entity
+deactivate Mapper
+
+ReportService -> ReportRepository : CreateReport(report)
+activate ReportRepository
+
+ReportRepository -> DB : Save Report
+activate DB
+DB --> ReportRepository : Confirm save
+deactivate DB
+
+ReportRepository --> ReportService : Return saved Report
+deactivate ReportRepository
+
+ReportService -> Mapper : Map<ReportResponseDto>(savedReport)
+activate Mapper
+Mapper --> ReportService : Return ReportResponseDto
+deactivate Mapper
+
+ReportService --> ServiceManager : Return ReportResponseDto
+deactivate ReportService
+
+ServiceManager --> Controller : Return ReportResponseDto
+deactivate ServiceManager
+
+Controller --> Client : Return Created with report data
+deactivate Controller
+@enduml

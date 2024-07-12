@@ -1,0 +1,55 @@
+@startuml
+actor Client
+participant "API Controller" as Controller
+participant "ServiceManager" as ServiceManager
+participant "DeviceService" as DeviceService
+participant "DeviceRepository" as DeviceRepository
+participant "Mapper" as Mapper
+database "Database" as DB
+
+Client -> Controller : POST /api/disable-device
+activate Controller
+
+Controller -> ServiceManager : DeviceService.DisableDevice(deviceId)
+activate ServiceManager
+
+ServiceManager -> DeviceService : DisableDevice(deviceId)
+activate DeviceService
+
+DeviceService -> DeviceRepository : FindDeviceById(deviceId)
+activate DeviceRepository
+
+DeviceRepository -> DB : Query device
+activate DB
+DB --> DeviceRepository : Return device data
+deactivate DB
+
+DeviceRepository --> DeviceService : Return Device
+deactivate DeviceRepository
+
+DeviceService -> DeviceService : Validate device status
+DeviceService -> DeviceService : Update device status to disabled
+
+DeviceService -> DeviceRepository : UpdateDevice(device)
+activate DeviceRepository
+DeviceRepository -> DB : Update device status
+activate DB
+DB --> DeviceRepository : Confirm update
+deactivate DB
+DeviceRepository --> DeviceService : Return updated Device
+deactivate DeviceRepository
+
+DeviceService -> Mapper : Map<DeviceResponseModel>(updatedDevice)
+activate Mapper
+Mapper --> DeviceService : Return mapped data
+deactivate Mapper
+
+DeviceService --> ServiceManager : Return DeviceResponseModel
+deactivate DeviceService
+
+ServiceManager --> Controller : Return DeviceResponseModel
+deactivate ServiceManager
+
+Controller --> Client : Return OK with updated device data
+deactivate Controller
+@enduml

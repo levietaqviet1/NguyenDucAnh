@@ -1,0 +1,71 @@
+@startuml
+class TaskListController {
+  +CreateTaskList(CreateTaskListDto): Task<IActionResult>
+}
+
+class CreateTaskListDto {
+  +Title: string
+  +Description: string
+  +ProjectId: Guid
+}
+
+interface IServiceManager {
+  +TaskListService: ITaskListService
+  +AccountService: IAccountService
+  +AuthenticationService: IAuthenticationService
+  +MailService: IMailService
+  +FileService: IFileService
+  +NewsService: INewsService
+  +NotificationService: INotificationService
+  +ScheduleService: IScheduleService
+  +TaskService: ITaskService
+  +ProjectService: IProjectService
+  +MemberService: IMemberService
+}
+
+interface ITaskListService {
+  +CreateTaskList(CreateTaskListDto): Task<TaskListResponseDto>
+}
+
+class TaskListService {
+  -_repository: IRepositoryManager
+  -_mapper: IMapper
+  +CreateTaskList(CreateTaskListDto): Task<TaskListResponseDto>
+}
+
+interface ITaskListRepository {
+  +CreateTaskList(TaskList): Task<TaskList>
+}
+
+class TaskListRepository {
+  +CreateTaskList(TaskList): Task<TaskList>
+}
+
+class TaskList {
+  +Id: Guid
+  +Title: string
+  +Description: string
+  +ProjectId: Guid
+  +CreatedAt: DateTime
+  +UpdatedAt: DateTime
+}
+
+class TaskListResponseDto {
+  +Id: Guid
+  +Title: string
+  +Description: string
+  +ProjectId: Guid
+  +CreatedAt: DateTime
+  +UpdatedAt: DateTime
+}
+
+TaskListController --> IServiceManager
+IServiceManager --> ITaskListService
+TaskListService ..|> ITaskListService
+TaskListService --> ITaskListRepository
+TaskListRepository ..|> ITaskListRepository
+TaskListRepository --> TaskList
+TaskListService ..> TaskListResponseDto
+TaskListController ..> CreateTaskListDto
+
+@enduml

@@ -1,0 +1,86 @@
+@startuml
+class ReportController {
+  +GetReportList(ReportListParameters): Task<IActionResult>
+}
+
+class ReportListParameters {
+  +SearchContent: string
+  +StartDate: DateTime?
+  +EndDate: DateTime?
+  +ReportType: ReportType?
+  +Status: ReportStatus?
+}
+
+interface IServiceManager {
+  +ReportService: IReportService
+  +OtherServices: ...
+}
+
+interface IReportService {
+  +GetReportList(ReportListParameters): Task<(IEnumerable<ReportListResponseModel>, MetaData)>
+}
+
+class ReportService {
+  -_repository: IRepositoryManager
+  -_mapper: IMapper
+  +GetReportList(ReportListParameters): Task<(IEnumerable<ReportListResponseModel>, MetaData)>
+}
+
+interface IReportRepository {
+  +FindReports(ReportListParameters): Task<PagedList<Report>>
+}
+
+class ReportRepository {
+  +FindReports(ReportListParameters): Task<PagedList<Report>>
+  -GetByCondition(Expression<Func<Report, bool>>, bool): IQueryable<Report>
+  -ApplyFilters(IQueryable<Report>, ReportListParameters): IQueryable<Report>
+}
+
+class PagedList<T> {
+  +MetaData: MetaData
+}
+
+class Report {
+  +Id: Guid
+  +Title: string
+  +Content: string
+  +CreatedDate: DateTime
+  +UpdatedDate: DateTime
+  +ReportType: ReportType
+  +Status: ReportStatus
+}
+
+class ReportListResponseModel {
+  +Id: Guid
+  +Title: string
+  +CreatedDate: DateTime
+  +ReportType: ReportType
+  +Status: ReportStatus
+}
+
+enum ReportType {
+  BUG
+  FEATURE_REQUEST
+  PERFORMANCE
+  SECURITY
+}
+
+enum ReportStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
+ReportController --> IServiceManager
+IServiceManager --> IReportService
+ReportService ..|> IReportService
+ReportService --> IReportRepository
+ReportRepository ..|> IReportRepository
+ReportRepository --> PagedList
+PagedList --> Report
+ReportService --> ReportListResponseModel
+ReportController --> ReportListParameters
+Report --> ReportType
+Report --> ReportStatus
+@enduml

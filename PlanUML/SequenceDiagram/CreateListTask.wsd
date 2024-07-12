@@ -1,0 +1,49 @@
+@startuml
+actor Client
+participant "TaskListController" as TLC
+participant "IServiceManager" as ISM
+participant "TaskListService" as TLS
+participant "TaskListRepository" as TLR
+participant "TaskList" as TL
+participant "Mapper" as M
+
+Client -> TLC : POST /api/tasklists
+activate TLC
+
+TLC -> ISM : TaskListService.CreateTaskList(createTaskListDto)
+activate ISM
+
+ISM -> TLS : CreateTaskList(createTaskListDto)
+activate TLS
+
+TLS -> M : Map<TaskList>(createTaskListDto)
+activate M
+M --> TLS : TaskList
+deactivate M
+
+TLS -> TLR : CreateTaskList(taskList)
+activate TLR
+
+TLR -> TL : new TaskList()
+activate TL
+TL --> TLR : TaskList
+deactivate TL
+
+TLR --> TLS : TaskList
+deactivate TLR
+
+TLS -> M : Map<TaskListResponseDto>(taskList)
+activate M
+M --> TLS : TaskListResponseDto
+deactivate M
+
+TLS --> ISM : TaskListResponseDto
+deactivate TLS
+
+ISM --> TLC : TaskListResponseDto
+deactivate ISM
+
+TLC --> Client : 201 Created with TaskListResponseDto
+deactivate TLC
+
+@enduml

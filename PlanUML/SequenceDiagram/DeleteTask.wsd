@@ -1,0 +1,48 @@
+@startuml
+actor Client
+participant "TaskController" as TC
+participant "IServiceManager" as ISM
+participant "TaskService" as TS
+participant "TaskRepository" as TR
+participant "Task" as T
+
+Client -> TC : DELETE /api/tasks/{id}
+activate TC
+
+TC -> ISM : TaskService.DeleteTask(id)
+activate ISM
+
+ISM -> TS : DeleteTask(id)
+activate TS
+
+TS -> TR : GetTaskById(id)
+activate TR
+
+TR --> TS : Task
+deactivate TR
+
+alt Task not found
+    TS --> ISM : ThrowNotFoundException
+    ISM --> TC : NotFound
+    TC --> Client : 404 Not Found
+else Task found
+    TS -> TR : DeleteTask(task)
+    activate TR
+    TR -> T : MarkAsDeleted()
+    activate T
+    T --> TR : Updated Task
+    deactivate T
+    TR --> TS : Success
+    deactivate TR
+
+    TS --> ISM : Success
+    deactivate TS
+
+    ISM --> TC : Success
+    deactivate ISM
+
+    TC --> Client : 204 No Content
+end
+deactivate TC
+
+@enduml

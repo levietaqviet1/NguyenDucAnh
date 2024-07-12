@@ -1,0 +1,47 @@
+@startuml
+actor Client
+participant "ProjectController" as PC
+participant "IServiceManager" as ISM
+participant "ProjectService" as PS
+participant "ProjectRepository" as PR
+participant "PagedList<ProjectResource>" as PL
+participant "Mapper" as M
+
+Client -> PC : GET /api/projects/{projectId}/resources
+activate PC
+
+PC -> ISM : ProjectService.GetProjectResources(projectId, param)
+activate ISM
+
+ISM -> PS : GetProjectResources(projectId, param)
+activate PS
+
+PS -> PR : FindProjectResources(projectId, param)
+activate PR
+
+PR -> PR : GetByCondition()
+PR -> PR : Search()
+PR -> PL : new PagedList<ProjectResource>()
+activate PL
+PL --> PR : PagedList<ProjectResource>
+deactivate PL
+
+PR --> PS : PagedList<ProjectResource>
+deactivate PR
+
+PS -> M : Map<ProjectResourceResponseModel>()
+activate M
+M --> PS : IEnumerable<ProjectResourceResponseModel>
+deactivate M
+
+PS --> ISM : (data, meta)
+deactivate PS
+
+ISM --> PC : (data, meta)
+deactivate ISM
+
+PC -> PC : Add X-Pagination header
+PC --> Client : 200 OK with data
+deactivate PC
+
+@enduml

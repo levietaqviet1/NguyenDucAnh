@@ -1,0 +1,58 @@
+@startuml
+actor User
+participant "API Controller" as Controller
+participant "ServiceManager" as ServiceManager
+participant "AuthenticationService" as AuthService
+participant "UserManager" as UserManager
+participant "TwoFactorService" as TwoFactorService
+database "Database" as DB
+
+User -> Controller : POST /api/enable-two-factor
+activate Controller
+
+Controller -> ServiceManager : AuthenticationService.EnableTwoFactor(userId)
+activate ServiceManager
+
+ServiceManager -> AuthService : EnableTwoFactor(userId)
+activate AuthService
+
+AuthService -> UserManager : FindByIdAsync(userId)
+activate UserManager
+UserManager -> DB : Query user
+DB --> UserManager : Return user data
+UserManager --> AuthService : Return User
+deactivate UserManager
+
+AuthService -> TwoFactorService : GenerateTwoFactorSecretKey()
+activate TwoFactorService
+TwoFactorService --> AuthService : Return secretKey
+deactivate TwoFactorService
+
+AuthService -> TwoFactorService : GenerateTwoFactorQRCodeUri(user, secretKey)
+activate TwoFactorService
+TwoFactorService --> AuthService : Return QR code URI
+deactivate TwoFactorService
+
+AuthService -> UserManager : SetTwoFactorEnabledAsync(user, true)
+activate UserManager
+UserManager -> DB : Update user 2FA status
+DB --> UserManager : Confirm update
+UserManager --> AuthService : Return result
+deactivate UserManager
+
+AuthService -> UserManager : UpdateAsync(user)
+activate UserManager
+UserManager -> DB : Update user
+DB --> UserManager : Confirm update
+UserManager --> AuthService : Return result
+deactivate UserManager
+
+AuthService --> ServiceManager : Return TwoFactorEnableResponse
+deactivate AuthService
+
+ServiceManager --> Controller : Return TwoFactorEnableResponse
+deactivate ServiceManager
+
+Controller --> User : Return OK with 2FA enable data
+deactivate Controller
+@enduml

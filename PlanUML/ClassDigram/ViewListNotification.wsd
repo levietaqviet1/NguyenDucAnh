@@ -1,0 +1,76 @@
+@startuml
+class ApiController {
+  +GetNotifications(NotificationParameters): Task<IActionResult>
+}
+
+class NotificationParameters {
+  +SearchContent: string
+  +UserId: string
+  +StartDate: DateTime?
+  +EndDate: DateTime?
+  +IsRead: bool?
+}
+
+interface IServiceManager {
+  +NotificationService: INotificationService
+  +AccountService: IAccountService
+  +AuthenticationService: IAuthenticationService
+  +MailService: IMailService
+  +FileService: IFileService
+  +NewsService: INewsService
+  +ScheduleService: IScheduleService
+  +TaskService: ITaskService
+  +TaskListService: ITaskListService
+  +ProjectService: IProjectService
+  +MemberService: IMemberService
+}
+
+interface INotificationService {
+  +GetNotifications(NotificationParameters): Task<(IEnumerable<NotificationResponseModel>, MetaData)>
+}
+
+class NotificationService {
+  -_repository: IRepositoryManager
+  -_mapper: IMapper
+  +GetNotifications(NotificationParameters): Task<(IEnumerable<NotificationResponseModel>, MetaData)>
+}
+
+interface INotificationRepository {
+  +FindNotifications(NotificationParameters): Task<PagedList<Notification>>
+}
+
+class NotificationRepository {
+  +FindNotifications(NotificationParameters): Task<PagedList<Notification>>
+  -GetByCondition(Expression<Func<Notification, bool>>, bool): IQueryable<Notification>
+  -ApplyFilters(IQueryable<Notification>, NotificationParameters): IQueryable<Notification>
+}
+
+class PagedList<T> {
+  +MetaData: MetaData
+}
+
+class Notification {
+  +Id: Guid
+  +UserId: string
+  +Content: string
+  +CreatedAt: DateTime
+  +IsRead: bool
+}
+
+class NotificationResponseModel {
+  +Id: Guid
+  +Content: string
+  +CreatedAt: DateTime
+  +IsRead: bool
+}
+
+ApiController --> IServiceManager
+IServiceManager --> INotificationService
+NotificationService ..|> INotificationService
+NotificationService --> INotificationRepository
+NotificationRepository ..|> INotificationRepository
+NotificationRepository --> PagedList
+PagedList --> Notification
+NotificationService --> NotificationResponseModel
+ApiController --> NotificationParameters
+@enduml

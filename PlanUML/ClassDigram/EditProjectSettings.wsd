@@ -1,0 +1,77 @@
+@startuml
+class ProjectController {
+  +UpdateProjectSettings(int id, UpdateProjectSettingsRequest): Task<IActionResult>
+}
+
+class UpdateProjectSettingsRequest {
+  +Name: string
+  +Description: string
+  +StartDate: DateTime
+  +EndDate: DateTime
+  +Status: ProjectStatus
+}
+
+interface IServiceManager {
+  +ProjectService: IProjectService
+  +AccountService: IAccountService
+  +TaskService: ITaskService
+  +...()
+}
+
+interface IProjectService {
+  +UpdateProjectSettings(int id, UpdateProjectSettingsRequest): Task<ProjectSettingsResponseModel>
+}
+
+class ProjectService {
+  -_repository: IRepositoryManager
+  -_mapper: IMapper
+  +UpdateProjectSettings(int id, UpdateProjectSettingsRequest): Task<ProjectSettingsResponseModel>
+}
+
+interface IProjectRepository {
+  +GetProjectById(int id): Task<Project>
+  +UpdateProject(Project): Task<bool>
+}
+
+class ProjectRepository {
+  +GetProjectById(int id): Task<Project>
+  +UpdateProject(Project): Task<bool>
+}
+
+class Project {
+  +Id: int
+  +Name: string
+  +Description: string
+  +StartDate: DateTime
+  +EndDate: DateTime
+  +Status: ProjectStatus
+  +UpdateSettings(UpdateProjectSettingsRequest): void
+}
+
+enum ProjectStatus {
+  NotStarted
+  InProgress
+  Completed
+  OnHold
+}
+
+class ProjectSettingsResponseModel {
+  +Id: int
+  +Name: string
+  +Description: string
+  +StartDate: DateTime
+  +EndDate: DateTime
+  +Status: ProjectStatus
+}
+
+ProjectController --> IServiceManager
+IServiceManager --> IProjectService
+ProjectService ..|> IProjectService
+ProjectService --> IProjectRepository
+ProjectRepository ..|> IProjectRepository
+ProjectRepository --> Project
+Project --> ProjectStatus
+ProjectService ..> ProjectSettingsResponseModel
+ProjectController ..> UpdateProjectSettingsRequest
+
+@enduml

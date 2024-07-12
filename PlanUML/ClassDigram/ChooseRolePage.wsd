@@ -1,0 +1,62 @@
+
+@startuml
+skinparam classAttributeIconSize 0
+
+class ChooseRoleController {
+  +GetAvailableRoles(): Task<IActionResult>
+  +SelectRole(RoleSelectionRequest): Task<IActionResult>
+}
+
+class RoleSelectionRequest {
+  +UserId: string
+  +SelectedRoleId: string
+}
+
+interface IServiceManager {
+  +RoleService: IRoleService
+  +UserService: IUserService
+}
+
+interface IRoleService {
+  +GetAvailableRoles(): Task<IEnumerable<RoleDto>>
+  +AssignRoleToUser(string, string): Task<bool>
+}
+
+class RoleService {
+  -_repository: IRepositoryManager
+  -_mapper: IMapper
+  +GetAvailableRoles(): Task<IEnumerable<RoleDto>>
+  +AssignRoleToUser(string, string): Task<bool>
+}
+
+interface IRoleRepository {
+  +GetAllRoles(): Task<IEnumerable<Role>>
+  +AssignRoleToUser(string, string): Task<bool>
+}
+
+class RoleRepository {
+  +GetAllRoles(): Task<IEnumerable<Role>>
+  +AssignRoleToUser(string, string): Task<bool>
+}
+
+class Role {
+  +Id: string
+  +Name: string
+  +Description: string
+}
+
+class RoleDto {
+  +Id: string
+  +Name: string
+  +Description: string
+}
+
+ChooseRoleController --> IServiceManager
+IServiceManager --> IRoleService
+RoleService ..|> IRoleService
+RoleService --> IRoleRepository
+RoleRepository ..|> IRoleRepository
+RoleRepository --> Role
+RoleService --> RoleDto
+ChooseRoleController --> RoleSelectionRequest
+@enduml

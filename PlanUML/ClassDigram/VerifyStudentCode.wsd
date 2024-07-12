@@ -1,0 +1,63 @@
+@startuml
+class ApiController {
+  +VerifyStudentCode(VerifyStudentCodeRequest): Task<IActionResult>
+}
+
+class VerifyStudentCodeRequest {
+  +StudentCode: string
+}
+
+interface IServiceManager {
+  +StudentService: IStudentService
+  +AuthenticationService: IAuthenticationService
+  +MailService: IMailService
+  +FileService: IFileService
+  +...
+}
+
+interface IStudentService {
+  +VerifyStudentCode(VerifyStudentCodeRequest): Task<StudentVerificationResponseModel>
+}
+
+class StudentService {
+  -_repository: IRepositoryManager
+  -_mapper: IMapper
+  +VerifyStudentCode(VerifyStudentCodeRequest): Task<StudentVerificationResponseModel>
+}
+
+interface IStudentRepository {
+  +FindStudentByCode(string): Task<Student>
+  +UpdateStudentVerificationStatus(int, bool): Task<Student>
+}
+
+class StudentRepository {
+  +FindStudentByCode(string): Task<Student>
+  +UpdateStudentVerificationStatus(int, bool): Task<Student>
+  -GetByCondition(Expression<Func<Student, bool>>, bool): IQueryable<Student>
+}
+
+class Student {
+  +Id: int
+  +StudentCode: string
+  +IsVerified: bool
+  +Name: string
+  +Email: string
+}
+
+class StudentVerificationResponseModel {
+  +Id: int
+  +StudentCode: string
+  +IsVerified: bool
+  +Name: string
+  +Email: string
+}
+
+ApiController --> IServiceManager
+IServiceManager --> IStudentService
+StudentService ..|> IStudentService
+StudentService --> IStudentRepository
+StudentRepository ..|> IStudentRepository
+StudentRepository --> Student
+StudentService --> StudentVerificationResponseModel
+ApiController --> VerifyStudentCodeRequest
+@enduml

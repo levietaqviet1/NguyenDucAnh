@@ -1,0 +1,86 @@
+@startuml
+class TaskController {
+  +GetTaskComments(int taskId, CommentParameters): Task<IActionResult>
+}
+
+
+interface IServiceManager {
+  +TaskService: ITaskService
+  +CommentService: ICommentService
+  +AccountService: IAccountService
+  +ProjectService: IProjectService
+  +NotificationService: INotificationService
+}
+
+interface ITaskService {
+  +GetTaskComments(int taskId, CommentParameters): Task<(IEnumerable<CommentResponseModel>, MetaData)>
+}
+
+class TaskService {
+  -_repository: IRepositoryManager
+  -_mapper: IMapper
+  +GetTaskComments(int taskId, CommentParameters): Task<(IEnumerable<CommentResponseModel>, MetaData)>
+}
+
+interface ITaskRepository {
+  +GetTaskById(int taskId): Task<Task>
+}
+
+class TaskRepository {
+  +GetTaskById(int taskId): Task<Task>
+}
+
+interface ICommentRepository {
+  +FindCommentsForTask(int taskId, CommentParameters): Task<PagedList<Comment>>
+}
+
+class CommentRepository {
+  +FindCommentsForTask(int taskId, CommentParameters): Task<PagedList<Comment>>
+}
+
+class PagedList<T> {
+  +MetaData: MetaData
+}
+
+class Task {
+  +Id: int
+  +Title: string
+  +Description: string
+}
+
+class Comment {
+  +Id: int
+  +Content: string
+  +TaskId: int
+  +UserId: string
+  +CreatedAt: DateTime
+}
+
+class MetaData {
+  +CurrentPage: int
+  +TotalPages: int
+  +PageSize: int
+  +TotalCount: int
+}
+
+class CommentResponseModel {
+  +Id: int
+  +Content: string
+  +UserName: string
+  +CreatedAt: DateTime
+}
+
+TaskController --> IServiceManager
+IServiceManager --> ITaskService
+TaskService ..|> ITaskService
+TaskService --> ITaskRepository
+TaskService --> ICommentRepository
+TaskRepository ..|> ITaskRepository
+CommentRepository ..|> ICommentRepository
+CommentRepository --> PagedList
+PagedList --> Comment
+PagedList --> MetaData
+TaskService ..> CommentResponseModel
+Task "1" -- "0..*" Comment : has
+
+@enduml

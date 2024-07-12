@@ -1,0 +1,77 @@
+@startuml
+class ApiController {
+  +SendProjectNotification(ProjectNotificationRequest): Task<IActionResult>
+}
+
+class ProjectNotificationRequest {
+  +ProjectId: string
+  +Message: string
+}
+
+interface IServiceManager {
+  +NotificationService: INotificationService
+  +ProjectService: IProjectService
+  +MemberService: IMemberService
+}
+
+interface INotificationService {
+  +SendProjectNotification(string projectId, string message): Task<bool>
+}
+
+class NotificationService {
+  -_notificationRepository: INotificationRepository
+  -_projectService: IProjectService
+  -_memberService: IMemberService
+  +SendProjectNotification(string projectId, string message): Task<bool>
+  -CreateNotification(ProjectMember member, string message): Notification
+}
+
+interface IProjectService {
+  +GetProjectById(string projectId): Task<Project>
+}
+
+interface IMemberService {
+  +GetProjectMembers(string projectId): Task<IEnumerable<ProjectMember>>
+}
+
+interface INotificationRepository {
+  +SaveNotifications(IEnumerable<Notification>): Task<bool>
+}
+
+class NotificationRepository {
+  +SaveNotifications(IEnumerable<Notification>): Task<bool>
+}
+
+class Project {
+  +Id: string
+  +Name: string
+}
+
+class ProjectMember {
+  +Id: string
+  +UserId: string
+  +ProjectId: string
+}
+
+class Notification {
+  +Id: string
+  +UserId: string
+  +Message: string
+  +CreatedAt: DateTime
+  +IsRead: bool
+}
+
+ApiController --> IServiceManager
+IServiceManager --> INotificationService
+IServiceManager --> IProjectService
+IServiceManager --> IMemberService
+NotificationService ..|> INotificationService
+NotificationService --> INotificationRepository
+NotificationService --> IProjectService
+NotificationService --> IMemberService
+NotificationRepository ..|> INotificationRepository
+ApiController --> ProjectNotificationRequest
+NotificationService --> Notification
+NotificationService --> Project
+NotificationService --> ProjectMember
+@enduml

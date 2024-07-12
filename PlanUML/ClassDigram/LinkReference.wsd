@@ -1,0 +1,74 @@
+@startuml
+class LinkReferenceController {
+  +GetLinkReferences(LinkReferenceParameters): Task<IActionResult>
+}
+
+class LinkReferenceParameters {
+  +SearchTerm: string
+  +CategoryId: int?
+  +IsActive: bool?
+}
+
+interface IServiceManager {
+  +LinkReferenceService: ILinkReferenceService
+  +OtherServices: ...
+}
+
+interface ILinkReferenceService {
+  +GetLinkReferences(LinkReferenceParameters): Task<(IEnumerable<LinkReferenceResponseModel>, MetaData)>
+}
+
+class LinkReferenceService {
+  -_repository: IRepositoryManager
+  -_mapper: IMapper
+  +GetLinkReferences(LinkReferenceParameters): Task<(IEnumerable<LinkReferenceResponseModel>, MetaData)>
+}
+
+interface ILinkReferenceRepository {
+  +FindLinkReferences(LinkReferenceParameters): Task<PagedList<LinkReference>>
+}
+
+class LinkReferenceRepository {
+  +FindLinkReferences(LinkReferenceParameters): Task<PagedList<LinkReference>>
+}
+
+class PagedList<T> {
+  +MetaData: MetaData
+}
+
+class LinkReference {
+  +Id: int
+  +Url: string
+  +Title: string
+  +Description: string
+  +CategoryId: int
+  +IsActive: bool
+}
+
+class MetaData {
+  +CurrentPage: int
+  +TotalPages: int
+  +PageSize: int
+  +TotalCount: int
+}
+
+class LinkReferenceResponseModel {
+  +Id: int
+  +Url: string
+  +Title: string
+  +Description: string
+  +CategoryName: string
+  +IsActive: bool
+}
+
+LinkReferenceController --> IServiceManager
+IServiceManager --> ILinkReferenceService
+LinkReferenceService ..|> ILinkReferenceService
+LinkReferenceService --> ILinkReferenceRepository
+LinkReferenceRepository ..|> ILinkReferenceRepository
+LinkReferenceRepository --> PagedList
+PagedList --> LinkReference
+PagedList --> MetaData
+LinkReferenceService ..> LinkReferenceResponseModel
+
+@enduml

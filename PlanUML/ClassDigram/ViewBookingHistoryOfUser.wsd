@@ -1,0 +1,77 @@
+@startuml
+class ApiController {
+  +GetUserBookingHistory(BookingHistoryParameters): Task<IActionResult>
+}
+
+class BookingHistoryParameters {
+  +UserId: string
+  +StartDate: DateTime?
+  +EndDate: DateTime?
+  +Status: BookingStatus?
+}
+
+interface IServiceManager {
+  +BookingService: IBookingService
+  +UserService: IUserService
+  +PaymentService: IPaymentService
+  +NotificationService: INotificationService
+}
+
+interface IBookingService {
+  +GetUserBookingHistory(BookingHistoryParameters): Task<(IEnumerable<BookingHistoryResponseModel>, MetaData)>
+}
+
+class BookingService {
+  -_repository: IRepositoryManager
+  -_mapper: IMapper
+  +GetUserBookingHistory(BookingHistoryParameters): Task<(IEnumerable<BookingHistoryResponseModel>, MetaData)>
+}
+
+interface IBookingRepository {
+  +FindUserBookingHistory(BookingHistoryParameters): Task<PagedList<Booking>>
+}
+
+class BookingRepository {
+  +FindUserBookingHistory(BookingHistoryParameters): Task<PagedList<Booking>>
+  -GetByCondition(Expression<Func<Booking, bool>>, bool): IQueryable<Booking>
+}
+
+class PagedList<T> {
+  +MetaData: MetaData
+}
+
+class Booking {
+  +Id: string
+  +UserId: string
+  +Date: DateTime
+  +Status: BookingStatus
+  +TotalAmount: decimal
+}
+
+class BookingHistoryResponseModel {
+  +Id: string
+  +Date: DateTime
+  +Status: BookingStatus
+  +TotalAmount: decimal
+  +ServiceDetails: string
+}
+
+enum BookingStatus {
+  Pending
+  Confirmed
+  Completed
+  Cancelled
+}
+
+ApiController --> IServiceManager
+IServiceManager --> IBookingService
+BookingService ..|> IBookingService
+BookingService --> IBookingRepository
+BookingRepository ..|> IBookingRepository
+BookingRepository --> PagedList
+PagedList --> Booking
+BookingService --> BookingHistoryResponseModel
+ApiController --> BookingHistoryParameters
+Booking --> BookingStatus
+BookingHistoryResponseModel --> BookingStatus
+@enduml

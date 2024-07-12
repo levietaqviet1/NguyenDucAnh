@@ -1,0 +1,44 @@
+@startuml
+actor Client
+participant "TaskListController" as TLC
+participant "IServiceManager" as ISM
+participant "TaskListService" as TLS
+participant "TaskListRepository" as TLR
+participant "TaskList" as TL
+
+Client -> TLC : DELETE /api/tasklists/{id}
+activate TLC
+
+TLC -> ISM : TaskListService.DeleteTaskList(id)
+activate ISM
+
+ISM -> TLS : DeleteTaskList(id)
+activate TLS
+
+TLS -> TLR : GetTaskListById(id)
+activate TLR
+TLR --> TLS : TaskList
+deactivate TLR
+
+alt TaskList not found
+    TLS --> ISM : NotFoundException
+    ISM --> TLC : NotFoundException
+    TLC --> Client : 404 Not Found
+else TaskList found
+    TLS -> TLR : DeleteTaskList(taskList)
+    activate TLR
+    TLR -> TL : MarkAsDeleted()
+    TLR --> TLS : void
+    deactivate TLR
+
+    TLS --> ISM : void
+    deactivate TLS
+
+    ISM --> TLC : void
+    deactivate ISM
+
+    TLC --> Client : 204 No Content
+    deactivate TLC
+end
+
+@enduml

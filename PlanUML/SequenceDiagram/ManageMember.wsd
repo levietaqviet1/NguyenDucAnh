@@ -1,0 +1,47 @@
+@startuml
+actor Client
+participant "MemberController" as MC
+participant "IServiceManager" as ISM
+participant "MemberService" as MS
+participant "MemberRepository" as MR
+participant "PagedList<Member>" as PL
+participant "Mapper" as M
+
+Client -> MC : GET /api/members
+activate MC
+
+MC -> ISM : MemberService.GetMemberList(param)
+activate ISM
+
+ISM -> MS : GetMemberList(param)
+activate MS
+
+MS -> MR : FindMembers(param)
+activate MR
+
+MR -> MR : GetByCondition()
+MR -> MR : ApplyFilters()
+MR -> PL : new PagedList<Member>()
+activate PL
+PL --> MR : PagedList<Member>
+deactivate PL
+
+MR --> MS : PagedList<Member>
+deactivate MR
+
+MS -> M : Map<MemberResponseModel>()
+activate M
+M --> MS : IEnumerable<MemberResponseModel>
+deactivate M
+
+MS --> ISM : (data, meta)
+deactivate MS
+
+ISM --> MC : (data, meta)
+deactivate ISM
+
+MC -> MC : Add X-Pagination header
+MC --> Client : 200 OK with data
+deactivate MC
+
+@enduml

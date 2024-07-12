@@ -1,0 +1,51 @@
+@startuml
+actor Client
+participant "NotificationController" as Controller
+participant "ServiceManager" as ServiceManager
+participant "NotificationService" as NotificationService
+participant "UserService" as UserService
+participant "NotificationRepository" as NotificationRepository
+database "Database" as DB
+
+Client -> Controller : POST /api/send-system-notification
+activate Controller
+
+Controller -> ServiceManager : NotificationService.SendSystemNotification(param)
+activate ServiceManager
+
+ServiceManager -> NotificationService : SendSystemNotification(param)
+activate NotificationService
+
+NotificationService -> UserService : GetUserDeviceTokens(param.Recipients)
+activate UserService
+UserService -> DB : Query user device tokens
+activate DB
+DB --> UserService : Return device tokens
+deactivate DB
+UserService --> NotificationService : Return device tokens
+deactivate UserService
+
+NotificationService -> NotificationService : Create Notification object
+
+NotificationService -> NotificationRepository : CreateNotification(notification)
+activate NotificationRepository
+NotificationRepository -> DB : Save notification
+activate DB
+DB --> NotificationRepository : Confirm save
+deactivate DB
+NotificationRepository --> NotificationService : Return saved notification
+deactivate NotificationRepository
+
+NotificationService -> NotificationService : Send push notifications to device tokens
+
+NotificationService -> NotificationService : Create NotificationResult
+
+NotificationService --> ServiceManager : Return NotificationResult
+deactivate NotificationService
+
+ServiceManager --> Controller : Return NotificationResult
+deactivate ServiceManager
+
+Controller --> Client : Return OK with notification result
+deactivate Controller
+@enduml

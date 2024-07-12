@@ -1,0 +1,52 @@
+@startuml
+actor Client
+participant "API Controller" as Controller
+participant "ServiceManager" as ServiceManager
+participant "DeviceService" as DeviceService
+participant "DeviceRepository" as DeviceRepository
+participant "Mapper" as Mapper
+database "Database" as DB
+
+Client -> Controller : PUT /api/update-device
+activate Controller
+
+Controller -> ServiceManager : DeviceService.UpdateDevice(deviceId, updateModel)
+activate ServiceManager
+
+ServiceManager -> DeviceService : UpdateDevice(deviceId, updateModel)
+activate DeviceService
+
+DeviceService -> DeviceRepository : GetDeviceById(deviceId)
+activate DeviceRepository
+
+DeviceRepository -> DB : Query device
+activate DB
+DB --> DeviceRepository : Return device data
+deactivate DB
+
+DeviceRepository --> DeviceService : Return Device
+deactivate DeviceRepository
+
+DeviceService -> Mapper : Map(updateModel, existingDevice)
+activate Mapper
+Mapper --> DeviceService : Return updated device
+deactivate Mapper
+
+DeviceService -> DeviceRepository : UpdateDevice(updatedDevice)
+activate DeviceRepository
+DeviceRepository -> DB : Save changes
+activate DB
+DB --> DeviceRepository : Confirm update
+deactivate DB
+DeviceRepository --> DeviceService : Return success
+deactivate DeviceRepository
+
+DeviceService --> ServiceManager : Return updated device
+deactivate DeviceService
+
+ServiceManager --> Controller : Return updated device
+deactivate ServiceManager
+
+Controller --> Client : Return OK with updated device data
+deactivate Controller
+@enduml

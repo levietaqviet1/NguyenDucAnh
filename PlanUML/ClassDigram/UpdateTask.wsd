@@ -1,0 +1,88 @@
+@startuml
+class TaskController {
+  +UpdateTask(int id, UpdateTaskDto): Task<IActionResult>
+}
+
+interface IServiceManager {
+  +TaskService: ITaskService
+  +OtherServices...
+}
+
+interface ITaskService {
+  +UpdateTask(int id, UpdateTaskDto): Task<UpdatedTaskResponseDto>
+}
+
+class TaskService {
+  -_repository: IRepositoryManager
+  -_mapper: IMapper
+  +UpdateTask(int id, UpdateTaskDto): Task<UpdatedTaskResponseDto>
+}
+
+interface ITaskRepository {
+  +GetTaskById(int id): Task<Task>
+  +UpdateTask(Task): void
+}
+
+class TaskRepository {
+  +GetTaskById(int id): Task<Task>
+  +UpdateTask(Task): void
+}
+
+class Task {
+  +Id: int
+  +Title: string
+  +Description: string
+  +DueDate: DateTime
+  +Status: TaskStatus
+  +AssignedTo: User
+  +Project: Project
+}
+
+class UpdateTaskDto {
+  +Title: string
+  +Description: string
+  +DueDate: DateTime
+  +Status: TaskStatus
+  +AssignedToId: int
+  +ProjectId: int
+}
+
+class UpdatedTaskResponseDto {
+  +Id: int
+  +Title: string
+  +Description: string
+  +DueDate: DateTime
+  +Status: TaskStatus
+  +AssignedTo: UserDto
+  +Project: ProjectDto
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  DONE
+}
+
+class User {
+  +Id: int
+  +Name: string
+}
+
+class Project {
+  +Id: int
+  +Name: string
+}
+
+TaskController --> IServiceManager
+IServiceManager --> ITaskService
+TaskService ..|> ITaskService
+TaskService --> ITaskRepository
+TaskRepository ..|> ITaskRepository
+TaskRepository --> Task
+Task --> TaskStatus
+Task --> User
+Task --> Project
+TaskService ..> UpdateTaskDto
+TaskService ..> UpdatedTaskResponseDto
+
+@enduml

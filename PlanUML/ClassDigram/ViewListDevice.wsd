@@ -1,0 +1,71 @@
+@startuml
+class ApiController {
+  +GetDeviceList(DeviceListParameters): Task<IActionResult>
+}
+
+class DeviceListParameters {
+  +SearchTerm: string
+  +Status: DeviceStatus
+  +PageNumber: int
+  +PageSize: int
+}
+
+enum DeviceStatus {
+  Active
+  Inactive
+  Maintenance
+}
+
+interface IServiceManager {
+  +DeviceService: IDeviceService
+  +OtherServices...
+}
+
+interface IDeviceService {
+  +GetDevices(DeviceListParameters): Task<(IEnumerable<DeviceResponseModel>, MetaData)>
+}
+
+class DeviceService {
+  -_repository: IRepositoryManager
+  -_mapper: IMapper
+  +GetDevices(DeviceListParameters): Task<(IEnumerable<DeviceResponseModel>, MetaData)>
+}
+
+interface IDeviceRepository {
+  +FindDevices(DeviceListParameters): Task<PagedList<Device>>
+}
+
+class DeviceRepository {
+  +FindDevices(DeviceListParameters): Task<PagedList<Device>>
+  -GetByCondition(Expression<Func<Device, bool>>, bool): IQueryable<Device>
+}
+
+class PagedList<T> {
+  +MetaData: MetaData
+}
+
+class Device {
+  +Id: string
+  +Name: string
+  +Status: DeviceStatus
+  +LastMaintenanceDate: DateTime
+}
+
+class DeviceResponseModel {
+  +Id: string
+  +Name: string
+  +Status: DeviceStatus
+  +LastMaintenanceDate: DateTime
+}
+
+ApiController --> IServiceManager
+IServiceManager --> IDeviceService
+DeviceService ..|> IDeviceService
+DeviceService --> IDeviceRepository
+DeviceRepository ..|> IDeviceRepository
+DeviceRepository --> PagedList
+PagedList --> Device
+DeviceService --> DeviceResponseModel
+ApiController --> DeviceListParameters
+Device --> DeviceStatus
+@enduml

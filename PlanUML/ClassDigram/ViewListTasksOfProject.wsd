@@ -1,0 +1,97 @@
+@startuml
+skinparam classAttributeIconSize 0
+
+class TaskController {
+  +GetProjectTasks(ProjectTasksParameters): Task<IActionResult>
+}
+
+class ProjectTasksParameters {
+  +ProjectId: string
+  +SearchContent: string?
+  +Status: TaskStatus?
+  +Priority: TaskPriority?
+}
+
+class RequestParameters {
+  +PageNumber: int
+  +PageSize: int
+}
+
+interface IServiceManager {
+  +TaskService: ITaskService
+  +ProjectService: IProjectService
+  +...()
+}
+
+interface ITaskService {
+  +GetProjectTasks(ProjectTasksParameters): Task<(IEnumerable<TaskResponseModel>, MetaData)>
+}
+
+class TaskService {
+  -_repository: IRepositoryManager
+  -_mapper: IMapper
+  +GetProjectTasks(ProjectTasksParameters): Task<(IEnumerable<TaskResponseModel>, MetaData)>
+}
+
+interface ITaskRepository {
+  +FindTasksByProject(ProjectTasksParameters): Task<PagedList<Task>>
+}
+
+class TaskRepository {
+  +FindTasksByProject(ProjectTasksParameters): Task<PagedList<Task>>
+}
+
+class PagedList<T> {
+  +MetaData: MetaData
+}
+
+class Task {
+  +Id: string
+  +Title: string
+  +Description: string
+  +Status: TaskStatus
+  +Priority: TaskPriority
+  +ProjectId: string
+}
+
+class MetaData {
+  +CurrentPage: int
+  +TotalPages: int
+  +PageSize: int
+  +TotalCount: int
+}
+
+class TaskResponseModel {
+  +Id: string
+  +Title: string
+  +Description: string
+  +Status: TaskStatus
+  +Priority: TaskPriority
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  DONE
+}
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+TaskController --> IServiceManager
+IServiceManager --> ITaskService
+TaskService ..|> ITaskService
+TaskService --> ITaskRepository
+TaskRepository ..|> ITaskRepository
+TaskRepository --> PagedList
+PagedList --> Task
+PagedList --> MetaData
+ProjectTasksParameters --|> RequestParameters
+TaskService ..> TaskResponseModel
+Task --> TaskStatus
+Task --> TaskPriority
+
+@enduml

@@ -1,0 +1,49 @@
+@startuml
+actor Supervisor
+participant "DashboardController" as DC
+participant "IServiceManager" as ISM
+participant "DashboardService" as DS
+participant "ProjectRepository" as PR
+participant "TaskRepository" as TR
+participant "MemberRepository" as MR
+participant "DashboardViewModel" as DVM
+
+Supervisor -> DC : GET /api/dashboard
+activate DC
+
+DC -> ISM : DashboardService.GetSupervisorDashboard()
+activate ISM
+
+ISM -> DS : GetSupervisorDashboard()
+activate DS
+
+DS -> PR : GetActiveProjects()
+activate PR
+PR --> DS : List<Project>
+deactivate PR
+
+DS -> TR : GetPendingTasks()
+activate TR
+TR --> DS : List<Task>
+deactivate TR
+
+DS -> MR : GetTeamMembers()
+activate MR
+MR --> DS : List<Member>
+deactivate MR
+
+DS -> DVM : new DashboardViewModel()
+activate DVM
+DVM --> DS : DashboardViewModel
+deactivate DVM
+
+DS --> ISM : DashboardViewModel
+deactivate DS
+
+ISM --> DC : DashboardViewModel
+deactivate ISM
+
+DC --> Supervisor : 200 OK with DashboardViewModel
+deactivate DC
+
+@enduml

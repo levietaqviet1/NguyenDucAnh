@@ -1,0 +1,47 @@
+@startuml
+actor Client
+participant "TaskListController" as TLC
+participant "IServiceManager" as ISM
+participant "TaskListService" as TLS
+participant "TaskListRepository" as TLR
+participant "Mapper" as M
+
+Client -> TLC : PUT /api/tasklist/{id}
+activate TLC
+
+TLC -> ISM : TaskListService.UpdateTaskList(id, updateDto)
+activate ISM
+
+ISM -> TLS : UpdateTaskList(id, updateDto)
+activate TLS
+
+TLS -> TLR : GetTaskListById(id)
+activate TLR
+TLR --> TLS : TaskList
+deactivate TLR
+
+TLS -> M : Map(updateDto, taskList)
+activate M
+M --> TLS : Updated TaskList
+deactivate M
+
+TLS -> TLR : UpdateTaskList(taskList)
+activate TLR
+TLR --> TLS : Updated TaskList
+deactivate TLR
+
+TLS -> M : Map<TaskListResponseDto>(updatedTaskList)
+activate M
+M --> TLS : TaskListResponseDto
+deactivate M
+
+TLS --> ISM : TaskListResponseDto
+deactivate TLS
+
+ISM --> TLC : TaskListResponseDto
+deactivate ISM
+
+TLC --> Client : 200 OK with updated data
+deactivate TLC
+
+@enduml

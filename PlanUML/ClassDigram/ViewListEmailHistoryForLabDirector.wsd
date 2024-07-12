@@ -1,0 +1,68 @@
+@startuml
+class EmailHistoryController {
+  +GetEmailHistory(EmailHistoryParameters): Task<IActionResult>
+}
+
+class EmailHistoryParameters {
+  +StartDate: DateTime?
+  +EndDate: DateTime?
+  +SearchContent: string?
+  +SortBy: string?
+}
+
+interface IServiceManager {
+  +EmailHistoryService: IEmailHistoryService
+  +OtherServices: ...
+}
+
+interface IEmailHistoryService {
+  +GetEmailHistory(EmailHistoryParameters): Task<(IEnumerable<EmailHistoryResponseModel>, MetaData)>
+}
+
+class EmailHistoryService {
+  -_repository: IRepositoryManager
+  -_mapper: IMapper
+  +GetEmailHistory(EmailHistoryParameters): Task<(IEnumerable<EmailHistoryResponseModel>, MetaData)>
+}
+
+interface IEmailHistoryRepository {
+  +FindEmailHistory(EmailHistoryParameters): Task<PagedList<EmailHistory>>
+}
+
+class EmailHistoryRepository {
+  +FindEmailHistory(EmailHistoryParameters): Task<PagedList<EmailHistory>>
+  -GetByCondition(Expression<Func<EmailHistory, bool>>, bool): IQueryable<EmailHistory>
+  -ApplyFilters(IQueryable<EmailHistory>, EmailHistoryParameters): IQueryable<EmailHistory>
+}
+
+class PagedList<T> {
+  +MetaData: MetaData
+}
+
+class EmailHistory {
+  +Id: Guid
+  +SentDate: DateTime
+  +Sender: string
+  +Recipient: string
+  +Subject: string
+  +Content: string
+}
+
+class EmailHistoryResponseModel {
+  +Id: Guid
+  +SentDate: DateTime
+  +Sender: string
+  +Recipient: string
+  +Subject: string
+}
+
+EmailHistoryController --> IServiceManager
+IServiceManager --> IEmailHistoryService
+EmailHistoryService ..|> IEmailHistoryService
+EmailHistoryService --> IEmailHistoryRepository
+EmailHistoryRepository ..|> IEmailHistoryRepository
+EmailHistoryRepository --> PagedList
+PagedList --> EmailHistory
+EmailHistoryService --> EmailHistoryResponseModel
+EmailHistoryController --> EmailHistoryParameters
+@enduml

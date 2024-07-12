@@ -1,0 +1,46 @@
+@startuml
+actor Client
+participant "API Controller" as Controller
+participant "ServiceManager" as ServiceManager
+participant "DeviceService" as DeviceService
+participant "DeviceRepository" as DeviceRepository
+participant "Mapper" as Mapper
+database "Database" as DB
+
+Client -> Controller : GET /api/get-device-schedule
+activate Controller
+
+Controller -> ServiceManager : DeviceService.GetDeviceSchedule(param)
+activate ServiceManager
+
+ServiceManager -> DeviceService : GetDeviceSchedule(param)
+activate DeviceService
+
+DeviceService -> DeviceRepository : FindDeviceSchedule(param)
+activate DeviceRepository
+
+DeviceRepository -> DeviceRepository : GetByCondition()
+DeviceRepository -> DB : Query device schedules
+activate DB
+DB --> DeviceRepository : Return device schedules data
+deactivate DB
+
+DeviceRepository -> DeviceRepository : Create PagedList<DeviceSchedule>
+DeviceRepository --> DeviceService : Return PagedList<DeviceSchedule>
+deactivate DeviceRepository
+
+DeviceService -> Mapper : Map<DeviceScheduleResponseModel>(deviceSchedules)
+activate Mapper
+Mapper --> DeviceService : Return mapped data
+deactivate Mapper
+
+DeviceService --> ServiceManager : Return (data, metadata)
+deactivate DeviceService
+
+ServiceManager --> Controller : Return (data, metadata)
+deactivate ServiceManager
+
+Controller -> Controller : Add X-Pagination header
+Controller --> Client : Return OK with device schedule data
+deactivate Controller
+@enduml

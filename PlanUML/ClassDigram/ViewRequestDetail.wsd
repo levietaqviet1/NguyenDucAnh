@@ -1,0 +1,62 @@
+@startuml
+class ApiController {
+  +GetAccountNeedVerified(NeedVerifyParameters): Task<IActionResult>
+}
+
+class NeedVerifyParameters {
+  +SearchContent: string
+  +UserId: string
+}
+
+interface IServiceManager {
+  +AccountService: IAccountService
+  +AuthenticationService: IAuthenticationService
+  +MailService: IMailService
+  +FileService: IFileService
+  +NewsService: INewsService
+  +NotificationService: INotificationService
+  +ScheduleService: IScheduleService
+  +TaskService: ITaskService
+  +TaskListService: ITaskListService
+  +ProjectService: IProjectService
+  +MemberService: IMemberService
+}
+
+interface IAccountService {
+  +GetVerifierAccounts(NeedVerifyParameters): Task<(IEnumerable<AccountNeedVerifyResponseModel>, MetaData)>
+}
+
+class AccountService {
+  -_repository: IRepositoryManager
+  -_mapper: IMapper
+  +GetVerifierAccounts(NeedVerifyParameters): Task<(IEnumerable<AccountNeedVerifyResponseModel>, MetaData)>
+}
+
+interface IAccountRepository {
+  +FindWithVerifierId(NeedVerifyParameters): Task<PagedList<Account>>
+}
+
+class AccountRepository {
+  +FindWithVerifierId(NeedVerifyParameters): Task<PagedList<Account>>
+  -GetByCondition(Expression<Func<Account, bool>>, bool): IQueryable<Account>
+}
+
+class PagedList<T> {
+  +MetaData: MetaData
+}
+
+class Account {
+  +IsVerified: bool
+  +IsBanned: bool
+  +IsDeleted: bool
+}
+
+ApiController --> IServiceManager
+IServiceManager --> IAccountService
+AccountService ..|> IAccountService
+AccountService --> IAccountRepository
+AccountRepository ..|> IAccountRepository
+AccountRepository --> PagedList
+PagedList --> Account
+ApiController --> NeedVerifyParameters
+@enduml

@@ -1,0 +1,48 @@
+@startuml
+actor Client
+participant "API Controller" as Controller
+participant "ServiceManager" as ServiceManager
+participant "AccountService" as AccountService
+participant "AccountRepository" as AccountRepository
+participant "PhoneValidator" as PhoneValidator
+database "Database" as DB
+
+Client -> Controller : PUT /api/change-phone
+activate Controller
+
+Controller -> ServiceManager : AccountService.ChangePhone(changePhoneRequest)
+activate ServiceManager
+
+ServiceManager -> AccountService : ChangePhone(changePhoneRequest)
+activate AccountService
+
+AccountService -> PhoneValidator : ValidatePhone(newPhone)
+activate PhoneValidator
+PhoneValidator --> AccountService : Return validation result
+deactivate PhoneValidator
+
+alt Phone is valid
+    AccountService -> AccountRepository : UpdatePhone(userId, newPhone)
+    activate AccountRepository
+    AccountRepository -> DB : Update account phone
+    activate DB
+    DB --> AccountRepository : Confirm update
+    deactivate DB
+    AccountRepository --> AccountService : Return updated account
+    deactivate AccountRepository
+
+    AccountService -> AccountService : GeneratePhoneVerificationCode()
+    AccountService -> AccountService : SendVerificationSMS(newPhone, code)
+else Phone is invalid
+    AccountService --> ServiceManager : Throw InvalidPhoneException
+end
+
+AccountService --> ServiceManager : Return ChangePhoneResult
+deactivate AccountService
+
+ServiceManager --> Controller : Return ChangePhoneResult
+deactivate ServiceManager
+
+Controller --> Client : Return OK with result
+deactivate Controller
+@enduml

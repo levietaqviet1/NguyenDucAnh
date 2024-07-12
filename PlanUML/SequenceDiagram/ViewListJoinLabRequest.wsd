@@ -1,0 +1,47 @@
+@startuml
+actor Client
+participant "API Controller" as Controller
+participant "ServiceManager" as ServiceManager
+participant "LabRequestService" as LabRequestService
+participant "LabRequestRepository" as LabRequestRepository
+participant "Mapper" as Mapper
+database "Database" as DB
+
+Client -> Controller : GET /api/list-join-lab-requests
+activate Controller
+
+Controller -> ServiceManager : LabRequestService.GetJoinLabRequests(param)
+activate ServiceManager
+
+ServiceManager -> LabRequestService : GetJoinLabRequests(param)
+activate LabRequestService
+
+LabRequestService -> LabRequestRepository : FindJoinLabRequests(param)
+activate LabRequestRepository
+
+LabRequestRepository -> LabRequestRepository : GetByCondition()
+LabRequestRepository -> LabRequestRepository : Search(param)
+LabRequestRepository -> DB : Query join lab requests
+activate DB
+DB --> LabRequestRepository : Return join lab requests data
+deactivate DB
+
+LabRequestRepository -> LabRequestRepository : Create PagedList<JoinLabRequest>
+LabRequestRepository --> LabRequestService : Return PagedList<JoinLabRequest>
+deactivate LabRequestRepository
+
+LabRequestService -> Mapper : Map<JoinLabRequestResponseModel>(requests)
+activate Mapper
+Mapper --> LabRequestService : Return mapped data
+deactivate Mapper
+
+LabRequestService --> ServiceManager : Return (data, metadata)
+deactivate LabRequestService
+
+ServiceManager --> Controller : Return (data, metadata)
+deactivate ServiceManager
+
+Controller -> Controller : Add X-Pagination header
+Controller --> Client : Return OK with join lab request data
+deactivate Controller
+@enduml

@@ -1,0 +1,57 @@
+@startuml
+class ApiController {
+  +EnableTwoFactor(string userId): Task<IActionResult>
+}
+
+interface IServiceManager {
+  +AuthenticationService: IAuthenticationService
+}
+
+interface IAuthenticationService {
+  +EnableTwoFactor(string userId): Task<TwoFactorEnableResponse>
+}
+
+class AuthenticationService {
+  -_userManager: UserManager<User>
+  -_twoFactorService: ITwoFactorService
+  +EnableTwoFactor(string userId): Task<TwoFactorEnableResponse>
+}
+
+interface ITwoFactorService {
+  +GenerateTwoFactorSecretKey(): string
+  +GenerateTwoFactorQRCodeUri(User user, string secretKey): string
+}
+
+class TwoFactorService {
+  +GenerateTwoFactorSecretKey(): string
+  +GenerateTwoFactorQRCodeUri(User user, string secretKey): string
+}
+
+class UserManager<User> {
+  +FindByIdAsync(string userId): Task<User>
+  +SetTwoFactorEnabledAsync(User user, bool enabled): Task<IdentityResult>
+  +UpdateAsync(User user): Task<IdentityResult>
+}
+
+class User {
+  +Id: string
+  +UserName: string
+  +Email: string
+  +TwoFactorEnabled: bool
+  +TwoFactorSecretKey: string
+}
+
+class TwoFactorEnableResponse {
+  +SecretKey: string
+  +QrCodeUri: string
+}
+
+ApiController --> IServiceManager
+IServiceManager --> IAuthenticationService
+AuthenticationService ..|> IAuthenticationService
+AuthenticationService --> UserManager
+AuthenticationService --> ITwoFactorService
+TwoFactorService ..|> ITwoFactorService
+UserManager --> User
+AuthenticationService --> TwoFactorEnableResponse
+@enduml

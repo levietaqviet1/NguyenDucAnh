@@ -1,0 +1,89 @@
+@startuml
+class MemberController {
+  +GetMemberList(MemberListParameters): Task<IActionResult>
+  +AddMember(AddMemberRequest): Task<IActionResult>
+  +UpdateMember(int, UpdateMemberRequest): Task<IActionResult>
+  +DeleteMember(int): Task<IActionResult>
+}
+
+class MemberListParameters {
+  +SearchContent: string
+  +ProjectId: int?
+  +Role: string?
+}
+
+interface IServiceManager {
+  +MemberService: IMemberService
+  +ProjectService: IProjectService
+  +AuthenticationService: IAuthenticationService
+  +NotificationService: INotificationService
+}
+
+interface IMemberService {
+  +GetMemberList(MemberListParameters): Task<(IEnumerable<MemberResponseModel>, MetaData)>
+  +AddMember(AddMemberRequest): Task<MemberResponseModel>
+  +UpdateMember(int, UpdateMemberRequest): Task<MemberResponseModel>
+  +DeleteMember(int): Task<bool>
+}
+
+class MemberService {
+  -_repository: IRepositoryManager
+  -_mapper: IMapper
+  +GetMemberList(MemberListParameters): Task<(IEnumerable<MemberResponseModel>, MetaData)>
+  +AddMember(AddMemberRequest): Task<MemberResponseModel>
+  +UpdateMember(int, UpdateMemberRequest): Task<MemberResponseModel>
+  +DeleteMember(int): Task<bool>
+}
+
+interface IMemberRepository {
+  +FindMembers(MemberListParameters): Task<PagedList<Member>>
+  +GetMemberById(int): Task<Member?>
+  +AddMember(Member): Task<Member>
+  +UpdateMember(Member): Task<Member>
+  +DeleteMember(Member): Task<bool>
+}
+
+class MemberRepository {
+  +FindMembers(MemberListParameters): Task<PagedList<Member>>
+  +GetMemberById(int): Task<Member?>
+  +AddMember(Member): Task<Member>
+  +UpdateMember(Member): Task<Member>
+  +DeleteMember(Member): Task<bool>
+}
+
+class PagedList<T> {
+  +MetaData: MetaData
+}
+
+class Member {
+  +Id: int
+  +Name: string
+  +Email: string
+  +Role: string
+  +ProjectId: int?
+}
+
+class MetaData {
+}
+
+class MemberResponseModel {
+}
+
+class AddMemberRequest {
+}
+
+class UpdateMemberRequest {
+}
+
+MemberController --> IServiceManager
+IServiceManager --> IMemberService
+MemberService ..|> IMemberService
+MemberService --> IMemberRepository
+MemberRepository ..|> IMemberRepository
+MemberRepository --> PagedList
+PagedList --> Member
+MemberService ..> MemberResponseModel
+MemberService ..> AddMemberRequest
+MemberService ..> UpdateMemberRequest
+
+@enduml

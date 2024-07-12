@@ -1,0 +1,47 @@
+@startuml
+actor Client
+participant "API Controller" as Controller
+participant "ServiceManager" as ServiceManager
+participant "AccountService" as AccountService
+participant "AccountRepository" as AccountRepository
+participant "Mapper" as Mapper
+database "Database" as DB
+
+Client -> Controller : GET /api/get-account-need-verified
+activate Controller
+
+Controller -> ServiceManager : AccountService.GetVerifierAccounts(param)
+activate ServiceManager
+
+ServiceManager -> AccountService : GetVerifierAccounts(param)
+activate AccountService
+
+AccountService -> AccountRepository : FindWithVerifierId(param)
+activate AccountRepository
+
+AccountRepository -> AccountRepository : GetByCondition()
+AccountRepository -> AccountRepository : Search(param)
+AccountRepository -> DB : Query accounts
+activate DB
+DB --> AccountRepository : Return accounts data
+deactivate DB
+
+AccountRepository -> AccountRepository : Create PagedList<Account>
+AccountRepository --> AccountService : Return PagedList<Account>
+deactivate AccountRepository
+
+AccountService -> Mapper : Map<AccountNeedVerifyResponseModel>(accounts)
+activate Mapper
+Mapper --> AccountService : Return mapped data
+deactivate Mapper
+
+AccountService --> ServiceManager : Return (data, metadata)
+deactivate AccountService
+
+ServiceManager --> Controller : Return (data, metadata)
+deactivate ServiceManager
+
+Controller -> Controller : Add X-Pagination header
+Controller --> Client : Return OK with user data
+deactivate Controller
+@enduml

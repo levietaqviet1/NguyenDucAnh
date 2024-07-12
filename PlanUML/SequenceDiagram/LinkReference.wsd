@@ -1,0 +1,47 @@
+@startuml
+actor Client
+participant "LinkReferenceController" as LRC
+participant "IServiceManager" as ISM
+participant "LinkReferenceService" as LRS
+participant "LinkReferenceRepository" as LRR
+participant "PagedList<LinkReference>" as PL
+participant "Mapper" as M
+
+Client -> LRC : GET /api/link-references
+activate LRC
+
+LRC -> ISM : LinkReferenceService.GetLinkReferences(param)
+activate ISM
+
+ISM -> LRS : GetLinkReferences(param)
+activate LRS
+
+LRS -> LRR : FindLinkReferences(param)
+activate LRR
+
+LRR -> LRR : GetByCondition()
+LRR -> LRR : ApplyFilters()
+LRR -> PL : new PagedList<LinkReference>()
+activate PL
+PL --> LRR : PagedList<LinkReference>
+deactivate PL
+
+LRR --> LRS : PagedList<LinkReference>
+deactivate LRR
+
+LRS -> M : Map<LinkReferenceResponseModel>()
+activate M
+M --> LRS : IEnumerable<LinkReferenceResponseModel>
+deactivate M
+
+LRS --> ISM : (data, meta)
+deactivate LRS
+
+ISM --> LRC : (data, meta)
+deactivate ISM
+
+LRC -> LRC : Add X-Pagination header
+LRC --> Client : 200 OK with data
+deactivate LRC
+
+@enduml

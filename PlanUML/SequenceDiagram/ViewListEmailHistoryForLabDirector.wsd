@@ -1,0 +1,47 @@
+@startuml
+actor "Lab Director" as Director
+participant "EmailHistoryController" as Controller
+participant "ServiceManager" as ServiceManager
+participant "EmailHistoryService" as EmailService
+participant "EmailHistoryRepository" as Repository
+participant "Mapper" as Mapper
+database "Database" as DB
+
+Director -> Controller : GET /api/email-history
+activate Controller
+
+Controller -> ServiceManager : EmailHistoryService.GetEmailHistory(param)
+activate ServiceManager
+
+ServiceManager -> EmailService : GetEmailHistory(param)
+activate EmailService
+
+EmailService -> Repository : FindEmailHistory(param)
+activate Repository
+
+Repository -> Repository : GetByCondition()
+Repository -> Repository : ApplyFilters(param)
+Repository -> DB : Query email history
+activate DB
+DB --> Repository : Return email history data
+deactivate DB
+
+Repository -> Repository : Create PagedList<EmailHistory>
+Repository --> EmailService : Return PagedList<EmailHistory>
+deactivate Repository
+
+EmailService -> Mapper : Map<EmailHistoryResponseModel>(emailHistory)
+activate Mapper
+Mapper --> EmailService : Return mapped data
+deactivate Mapper
+
+EmailService --> ServiceManager : Return (data, metadata)
+deactivate EmailService
+
+ServiceManager --> Controller : Return (data, metadata)
+deactivate ServiceManager
+
+Controller -> Controller : Add X-Pagination header
+Controller --> Director : Return OK with email history data
+deactivate Controller
+@enduml

@@ -1,0 +1,47 @@
+@startuml
+actor Client
+participant "API Controller" as Controller
+participant "ServiceManager" as ServiceManager
+participant "NotificationService" as NotificationService
+participant "NotificationRepository" as NotificationRepository
+participant "Mapper" as Mapper
+database "Database" as DB
+
+Client -> Controller : GET /api/notifications
+activate Controller
+
+Controller -> ServiceManager : NotificationService.GetNotifications(param)
+activate ServiceManager
+
+ServiceManager -> NotificationService : GetNotifications(param)
+activate NotificationService
+
+NotificationService -> NotificationRepository : FindNotifications(param)
+activate NotificationRepository
+
+NotificationRepository -> NotificationRepository : GetByCondition()
+NotificationRepository -> NotificationRepository : ApplyFilters(param)
+NotificationRepository -> DB : Query notifications
+activate DB
+DB --> NotificationRepository : Return notifications data
+deactivate DB
+
+NotificationRepository -> NotificationRepository : Create PagedList<Notification>
+NotificationRepository --> NotificationService : Return PagedList<Notification>
+deactivate NotificationRepository
+
+NotificationService -> Mapper : Map<NotificationResponseModel>(notifications)
+activate Mapper
+Mapper --> NotificationService : Return mapped data
+deactivate Mapper
+
+NotificationService --> ServiceManager : Return (data, metadata)
+deactivate NotificationService
+
+ServiceManager --> Controller : Return (data, metadata)
+deactivate ServiceManager
+
+Controller -> Controller : Add X-Pagination header
+Controller --> Client : Return OK with notification data
+deactivate Controller
+@enduml

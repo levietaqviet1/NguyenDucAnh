@@ -1,0 +1,62 @@
+@startuml
+class ApiController {
+  +CreateDevice(DeviceCreateDto): Task<IActionResult>
+}
+
+class DeviceCreateDto {
+  +Name: string
+  +Type: string
+  +SerialNumber: string
+}
+
+interface IServiceManager {
+  +DeviceService: IDeviceService
+  +AccountService: IAccountService
+  +AuthenticationService: IAuthenticationService
+  +MailService: IMailService
+  +FileService: IFileService
+}
+
+interface IDeviceService {
+  +CreateDevice(DeviceCreateDto): Task<DeviceResponseDto>
+}
+
+class DeviceService {
+  -_repository: IRepositoryManager
+  -_mapper: IMapper
+  +CreateDevice(DeviceCreateDto): Task<DeviceResponseDto>
+}
+
+interface IDeviceRepository {
+  +CreateDevice(Device): Task<Device>
+}
+
+class DeviceRepository {
+  +CreateDevice(Device): Task<Device>
+}
+
+class Device {
+  +Id: Guid
+  +Name: string
+  +Type: string
+  +SerialNumber: string
+  +CreatedAt: DateTime
+  +UpdatedAt: DateTime
+}
+
+class DeviceResponseDto {
+  +Id: Guid
+  +Name: string
+  +Type: string
+  +SerialNumber: string
+}
+
+ApiController --> IServiceManager
+IServiceManager --> IDeviceService
+DeviceService ..|> IDeviceService
+DeviceService --> IDeviceRepository
+DeviceRepository ..|> IDeviceRepository
+DeviceRepository --> Device
+DeviceService --> DeviceResponseDto
+ApiController --> DeviceCreateDto
+@enduml

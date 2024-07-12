@@ -1,0 +1,48 @@
+@startuml
+actor Client
+participant "TaskController" as TC
+participant "IServiceManager" as ISM
+participant "TaskService" as TS
+participant "TaskRepository" as TR
+participant "PagedList<Task>" as PL
+participant "Mapper" as M
+
+Client -> TC : GET /api/tasks
+activate TC
+
+TC -> ISM : TaskService.GetAllTasks(param)
+activate ISM
+
+ISM -> TS : GetAllTasks(param)
+activate TS
+
+TS -> TR : FindAllTasks(param)
+activate TR
+
+TR -> TR : GetByCondition()
+TR -> TR : ApplyFilters()
+TR -> TR : Sort()
+TR -> PL : new PagedList<Task>()
+activate PL
+PL --> TR : PagedList<Task>
+deactivate PL
+
+TR --> TS : PagedList<Task>
+deactivate TR
+
+TS -> M : Map<TaskResponseModel>()
+activate M
+M --> TS : IEnumerable<TaskResponseModel>
+deactivate M
+
+TS --> ISM : (data, meta)
+deactivate TS
+
+ISM --> TC : (data, meta)
+deactivate ISM
+
+TC -> TC : Add X-Pagination header
+TC --> Client : 200 OK with data
+deactivate TC
+
+@enduml

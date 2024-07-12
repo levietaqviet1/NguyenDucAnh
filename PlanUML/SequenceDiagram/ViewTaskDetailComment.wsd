@@ -1,0 +1,53 @@
+@startuml
+actor Client
+participant "TaskController" as TC
+participant "IServiceManager" as ISM
+participant "TaskService" as TS
+participant "TaskRepository" as TR
+participant "CommentRepository" as CR
+participant "PagedList<Comment>" as PL
+participant "Mapper" as M
+
+Client -> TC : GET /api/tasks/{taskId}/comments
+activate TC
+
+TC -> ISM : TaskService.GetTaskComments(taskId, param)
+activate ISM
+
+ISM -> TS : GetTaskComments(taskId, param)
+activate TS
+
+TS -> TR : GetTaskById(taskId)
+activate TR
+TR --> TS : Task
+deactivate TR
+
+TS -> CR : FindCommentsForTask(taskId, param)
+activate CR
+
+CR -> CR : GetByCondition()
+CR -> CR : Search()
+CR -> PL : new PagedList<Comment>()
+activate PL
+PL --> CR : PagedList<Comment>
+deactivate PL
+
+CR --> TS : PagedList<Comment>
+deactivate CR
+
+TS -> M : Map<CommentResponseModel>()
+activate M
+M --> TS : IEnumerable<CommentResponseModel>
+deactivate M
+
+TS --> ISM : (data, meta)
+deactivate TS
+
+ISM --> TC : (data, meta)
+deactivate ISM
+
+TC -> TC : Add X-Pagination header
+TC --> Client : 200 OK with data
+deactivate TC
+
+@enduml

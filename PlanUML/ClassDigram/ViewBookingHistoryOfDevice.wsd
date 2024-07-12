@@ -1,0 +1,79 @@
+@startuml
+class ApiController {
+  +GetDeviceBookingHistory(string deviceId, BookingHistoryParameters): Task<IActionResult>
+}
+
+class BookingHistoryParameters {
+  +StartDate: DateTime?
+  +EndDate: DateTime?
+  +Status: BookingStatus?
+}
+
+interface IServiceManager {
+  +BookingService: IBookingService
+  +DeviceService: IDeviceService
+  +UserService: IUserService
+}
+
+interface IBookingService {
+  +GetDeviceBookingHistory(string deviceId, BookingHistoryParameters): Task<(IEnumerable<BookingHistoryResponseModel>, MetaData)>
+}
+
+class BookingService {
+  -_repository: IRepositoryManager
+  -_mapper: IMapper
+  +GetDeviceBookingHistory(string deviceId, BookingHistoryParameters): Task<(IEnumerable<BookingHistoryResponseModel>, MetaData)>
+}
+
+interface IBookingRepository {
+  +FindBookingHistoryByDeviceId(string deviceId, BookingHistoryParameters): Task<PagedList<Booking>>
+}
+
+class BookingRepository {
+  +FindBookingHistoryByDeviceId(string deviceId, BookingHistoryParameters): Task<PagedList<Booking>>
+  -GetByCondition(Expression<Func<Booking, bool>>, bool): IQueryable<Booking>
+  -ApplyFilters(IQueryable<Booking>, BookingHistoryParameters): IQueryable<Booking>
+}
+
+class PagedList<T> {
+  +MetaData: MetaData
+}
+
+class Booking {
+  +Id: string
+  +DeviceId: string
+  +UserId: string
+  +StartTime: DateTime
+  +EndTime: DateTime
+  +Status: BookingStatus
+}
+
+class BookingHistoryResponseModel {
+  +Id: string
+  +DeviceId: string
+  +UserName: string
+  +StartTime: DateTime
+  +EndTime: DateTime
+  +Status: BookingStatus
+}
+
+enum BookingStatus {
+  Pending
+  Approved
+  Rejected
+  Completed
+  Cancelled
+}
+
+ApiController --> IServiceManager
+IServiceManager --> IBookingService
+BookingService ..|> IBookingService
+BookingService --> IBookingRepository
+BookingRepository ..|> IBookingRepository
+BookingRepository --> PagedList
+PagedList --> Booking
+BookingService --> BookingHistoryResponseModel
+ApiController --> BookingHistoryParameters
+Booking --> BookingStatus
+BookingHistoryResponseModel --> BookingStatus
+@enduml

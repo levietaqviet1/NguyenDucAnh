@@ -1,0 +1,104 @@
+@startuml
+class DashboardController {
+  +GetSupervisorDashboard(): Task<IActionResult>
+}
+
+interface IServiceManager {
+  +DashboardService: IDashboardService
+  +ProjectService: IProjectService
+  +TaskService: ITaskService
+  +MemberService: IMemberService
+}
+
+interface IDashboardService {
+  +GetSupervisorDashboard(): Task<DashboardViewModel>
+}
+
+class DashboardService {
+  -_projectRepository: IProjectRepository
+  -_taskRepository: ITaskRepository
+  -_memberRepository: IMemberRepository
+  +GetSupervisorDashboard(): Task<DashboardViewModel>
+}
+
+interface IProjectRepository {
+  +GetActiveProjects(): Task<List<Project>>
+}
+
+interface ITaskRepository {
+  +GetPendingTasks(): Task<List<Task>>
+}
+
+interface IMemberRepository {
+  +GetTeamMembers(): Task<List<Member>>
+}
+
+class ProjectRepository {
+  +GetActiveProjects(): Task<List<Project>>
+}
+
+class TaskRepository {
+  +GetPendingTasks(): Task<List<Task>>
+}
+
+class MemberRepository {
+  +GetTeamMembers(): Task<List<Member>>
+}
+
+class DashboardViewModel {
+  +ActiveProjects: List<Project>
+  +PendingTasks: List<Task>
+  +TeamMembers: List<Member>
+  +ProjectCount: int
+  +TaskCount: int
+  +MemberCount: int
+}
+
+class Project {
+  +Id: int
+  +Name: string
+  +Status: ProjectStatus
+}
+
+class Task {
+  +Id: int
+  +Title: string
+  +Status: TaskStatus
+  +DueDate: DateTime
+}
+
+class Member {
+  +Id: int
+  +Name: string
+  +Role: string
+}
+
+enum ProjectStatus {
+  Active
+  Completed
+  OnHold
+}
+
+enum TaskStatus {
+  Pending
+  InProgress
+  Completed
+}
+
+DashboardController --> IServiceManager
+IServiceManager --> IDashboardService
+DashboardService ..|> IDashboardService
+DashboardService --> IProjectRepository
+DashboardService --> ITaskRepository
+DashboardService --> IMemberRepository
+ProjectRepository ..|> IProjectRepository
+TaskRepository ..|> ITaskRepository
+MemberRepository ..|> IMemberRepository
+DashboardService ..> DashboardViewModel
+DashboardViewModel --> Project
+DashboardViewModel --> Task
+DashboardViewModel --> Member
+Project --> ProjectStatus
+Task --> TaskStatus
+
+@enduml

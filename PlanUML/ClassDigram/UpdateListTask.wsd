@@ -1,0 +1,74 @@
+@startuml
+class TaskListController {
+  +UpdateTaskList(int id, UpdateTaskListDto): Task<IActionResult>
+}
+
+interface IServiceManager {
+  +TaskListService: ITaskListService
+}
+
+interface ITaskListService {
+  +UpdateTaskList(int id, UpdateTaskListDto): Task<TaskListResponseDto>
+}
+
+class TaskListService {
+  -_repository: IRepositoryManager
+  -_mapper: IMapper
+  +UpdateTaskList(int id, UpdateTaskListDto): Task<TaskListResponseDto>
+}
+
+interface ITaskListRepository {
+  +GetTaskListById(int id): Task<TaskList>
+  +UpdateTaskList(TaskList): Task<TaskList>
+}
+
+class TaskListRepository {
+  +GetTaskListById(int id): Task<TaskList>
+  +UpdateTaskList(TaskList): Task<TaskList>
+}
+
+class TaskList {
+  +Id: int
+  +Name: string
+  +Description: string
+  +Tasks: List<Task>
+}
+
+class UpdateTaskListDto {
+  +Name: string
+  +Description: string
+}
+
+class TaskListResponseDto {
+  +Id: int
+  +Name: string
+  +Description: string
+  +Tasks: List<TaskResponseDto>
+}
+
+class TaskResponseDto {
+  +Id: int
+  +Title: string
+  +Description: string
+  +Status: TaskStatus
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  DONE
+}
+
+TaskListController --> IServiceManager
+IServiceManager --> ITaskListService
+TaskListService ..|> ITaskListService
+TaskListService --> ITaskListRepository
+TaskListRepository ..|> ITaskListRepository
+TaskListRepository --> TaskList
+TaskList --> "0..*" TaskResponseDto : contains
+TaskResponseDto --> TaskStatus
+TaskListController ..> UpdateTaskListDto : uses
+TaskListService ..> UpdateTaskListDto : uses
+TaskListService ..> TaskListResponseDto : produces
+
+@enduml

@@ -1,0 +1,82 @@
+@startuml
+class AccountController {
+  +GetAccounts(AccountParameters): Task<IActionResult>
+}
+
+class AccountParameters {
+  +SearchTerm: string
+  +MinCreatedDate: DateTime?
+  +MaxCreatedDate: DateTime?
+  +OrderBy: string
+}
+
+interface IServiceManager {
+  +AccountService: IAccountService
+  +AuthenticationService: IAuthenticationService
+  +MailService: IMailService
+  +FileService: IFileService
+  +NewsService: INewsService
+  +NotificationService: INotificationService
+  +ScheduleService: IScheduleService
+  +TaskService: ITaskService
+  +TaskListService: ITaskListService
+  +ProjectService: IProjectService
+  +MemberService: IMemberService
+}
+
+interface IAccountService {
+  +GetAccounts(AccountParameters): Task<(IEnumerable<AccountResponseModel>, MetaData)>
+}
+
+class AccountService {
+  -_repository: IRepositoryManager
+  -_mapper: IMapper
+  +GetAccounts(AccountParameters): Task<(IEnumerable<AccountResponseModel>, MetaData)>
+}
+
+interface IAccountRepository {
+  +FindAll(AccountParameters): Task<PagedList<Account>>
+}
+
+class AccountRepository {
+  +FindAll(AccountParameters): Task<PagedList<Account>>
+}
+
+class PagedList<T> {
+  +MetaData: MetaData
+}
+
+class Account {
+  +Id: string
+  +Username: string
+  +Email: string
+  +CreatedDate: DateTime
+  +IsActive: bool
+}
+
+class MetaData {
+  +CurrentPage: int
+  +TotalPages: int
+  +PageSize: int
+  +TotalCount: int
+}
+
+class AccountResponseModel {
+  +Id: string
+  +Username: string
+  +Email: string
+  +CreatedDate: DateTime
+  +IsActive: bool
+}
+
+AccountController --> IServiceManager
+IServiceManager --> IAccountService
+AccountService ..|> IAccountService
+AccountService --> IAccountRepository
+AccountRepository ..|> IAccountRepository
+AccountRepository --> PagedList
+PagedList --> Account
+PagedList --> MetaData
+AccountService ..> AccountResponseModel
+
+@enduml

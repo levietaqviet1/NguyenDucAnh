@@ -1,0 +1,61 @@
+@startuml
+class ApiController {
+  +GetDeviceSchedule(DeviceScheduleParameters): Task<IActionResult>
+}
+
+class DeviceScheduleParameters {
+  +DeviceId: string
+  +StartDate: DateTime
+  +EndDate: DateTime
+}
+
+interface IServiceManager {
+  +DeviceService: IDeviceService
+  +ScheduleService: IScheduleService
+}
+
+interface IDeviceService {
+  +GetDeviceSchedule(DeviceScheduleParameters): Task<(IEnumerable<DeviceScheduleResponseModel>, MetaData)>
+}
+
+class DeviceService {
+  -_repository: IRepositoryManager
+  -_mapper: IMapper
+  +GetDeviceSchedule(DeviceScheduleParameters): Task<(IEnumerable<DeviceScheduleResponseModel>, MetaData)>
+}
+
+interface IDeviceRepository {
+  +FindDeviceSchedule(DeviceScheduleParameters): Task<PagedList<DeviceSchedule>>
+}
+
+class DeviceRepository {
+  +FindDeviceSchedule(DeviceScheduleParameters): Task<PagedList<DeviceSchedule>>
+  -GetByCondition(Expression<Func<DeviceSchedule, bool>>, bool): IQueryable<DeviceSchedule>
+}
+
+class PagedList<T> {
+  +MetaData: MetaData
+}
+
+class DeviceSchedule {
+  +DeviceId: string
+  +ScheduleTime: DateTime
+  +Status: string
+}
+
+class DeviceScheduleResponseModel {
+  +DeviceId: string
+  +ScheduleTime: DateTime
+  +Status: string
+}
+
+ApiController --> IServiceManager
+IServiceManager --> IDeviceService
+DeviceService ..|> IDeviceService
+DeviceService --> IDeviceRepository
+DeviceRepository ..|> IDeviceRepository
+DeviceRepository --> PagedList
+PagedList --> DeviceSchedule
+DeviceService --> DeviceScheduleResponseModel
+ApiController --> DeviceScheduleParameters
+@enduml

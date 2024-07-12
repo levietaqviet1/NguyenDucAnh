@@ -1,0 +1,79 @@
+@startuml
+class ProjectPermissionController {
+  +EditProjectPermission(int projectId, EditProjectPermissionDto): Task<IActionResult>
+}
+
+class EditProjectPermissionDto {
+  +Permissions: List<Permission>
+}
+
+interface IServiceManager {
+  +ProjectPermissionService: IProjectPermissionService
+  +ProjectService: IProjectService
+  +UserService: IUserService
+}
+
+interface IProjectPermissionService {
+  +EditProjectPermission(int projectId, EditProjectPermissionDto): Task<ProjectPermissionResponseDto>
+}
+
+class ProjectPermissionService {
+  -_repository: IRepositoryManager
+  -_mapper: IMapper
+  +EditProjectPermission(int projectId, EditProjectPermissionDto): Task<ProjectPermissionResponseDto>
+}
+
+interface IProjectPermissionRepository {
+  +GetProjectById(int projectId): Task<Project>
+  +UpdateProject(Project): Task
+}
+
+class ProjectPermissionRepository {
+  +GetProjectById(int projectId): Task<Project>
+  +UpdateProject(Project): Task
+}
+
+class Project {
+  +Id: int
+  +Name: string
+  +Permissions: List<Permission>
+  +UpdatePermissions(EditProjectPermissionDto): void
+}
+
+class Permission {
+  +UserId: int
+  +Role: ProjectRole
+}
+
+enum ProjectRole {
+  OWNER
+  ADMIN
+  MEMBER
+  VIEWER
+}
+
+class ProjectPermissionResponseDto {
+  +ProjectId: int
+  +ProjectName: string
+  +Permissions: List<PermissionDto>
+}
+
+class PermissionDto {
+  +UserId: int
+  +UserName: string
+  +Role: ProjectRole
+}
+
+ProjectPermissionController --> IServiceManager
+IServiceManager --> IProjectPermissionService
+ProjectPermissionService ..|> IProjectPermissionService
+ProjectPermissionService --> IProjectPermissionRepository
+ProjectPermissionRepository ..|> IProjectPermissionRepository
+ProjectPermissionRepository --> Project
+Project --> Permission
+Permission --> ProjectRole
+ProjectPermissionService ..> ProjectPermissionResponseDto
+ProjectPermissionResponseDto --> PermissionDto
+PermissionDto --> ProjectRole
+
+@enduml

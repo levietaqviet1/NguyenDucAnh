@@ -1,0 +1,81 @@
+@startuml
+class ApiController {
+  +BookDevice(BookDeviceParameters): Task<IActionResult>
+}
+
+class BookDeviceParameters {
+  +DeviceId: string
+  +UserId: string
+  +StartDate: DateTime
+  +EndDate: DateTime
+}
+
+interface IServiceManager {
+  +DeviceService: IDeviceService
+  +UserService: IUserService
+  +BookingService: IBookingService
+}
+
+interface IBookingService {
+  +BookDevice(BookDeviceParameters): Task<(BookingResponseModel, MetaData)>
+}
+
+class BookingService {
+  -_repository: IRepositoryManager
+  -_mapper: IMapper
+  +BookDevice(BookDeviceParameters): Task<(BookingResponseModel, MetaData)>
+}
+
+interface IBookingRepository {
+  +CreateBooking(BookDeviceParameters): Task<Booking>
+  +CheckDeviceAvailability(string, DateTime, DateTime): Task<bool>
+}
+
+class BookingRepository {
+  +CreateBooking(BookDeviceParameters): Task<Booking>
+  +CheckDeviceAvailability(string, DateTime, DateTime): Task<bool>
+}
+
+class Booking {
+  +Id: string
+  +DeviceId: string
+  +UserId: string
+  +StartDate: DateTime
+  +EndDate: DateTime
+  +Status: BookingStatus
+}
+
+enum BookingStatus {
+  Pending
+  Approved
+  Rejected
+  Cancelled
+}
+
+class BookingResponseModel {
+  +Id: string
+  +DeviceId: string
+  +UserId: string
+  +StartDate: DateTime
+  +EndDate: DateTime
+  +Status: BookingStatus
+}
+
+class Device {
+  +Id: string
+  +Name: string
+  +Type: string
+  +IsAvailable: bool
+}
+
+ApiController --> IServiceManager
+IServiceManager --> IBookingService
+BookingService ..|> IBookingService
+BookingService --> IBookingRepository
+BookingRepository ..|> IBookingRepository
+BookingRepository --> Booking
+Booking --> BookingStatus
+BookingService --> BookingResponseModel
+ApiController --> BookDeviceParameters
+BookingRepository --> Device
+@enduml

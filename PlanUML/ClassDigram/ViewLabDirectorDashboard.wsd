@@ -1,0 +1,123 @@
+@startuml
+class DashboardController {
+  +Index(): IActionResult
+}
+
+interface IServiceManager {
+  +DashboardService: IDashboardService
+  +LabService: ILabService
+  +ProjectService: IProjectService
+  +UserService: IUserService
+}
+
+interface IDashboardService {
+  +GetDashboardData(): Task<DashboardViewModel>
+}
+
+class DashboardService {
+  -_repositoryManager: IRepositoryManager
+  -_mapper: IMapper
+  +GetDashboardData(): Task<DashboardViewModel>
+}
+
+interface IRepositoryManager {
+  +LabRepository: ILabRepository
+  +ProjectRepository: IProjectRepository
+  +UserRepository: IUserRepository
+}
+
+interface ILabRepository {
+  +GetLabStatistics(): Task<LabStatistics>
+}
+
+interface IProjectRepository {
+  +GetActiveProjects(): Task<List<Project>>
+}
+
+interface IUserRepository {
+  +GetLabMembers(): Task<List<User>>
+}
+
+class LabRepository {
+  +GetLabStatistics(): Task<LabStatistics>
+}
+
+class ProjectRepository {
+  +GetActiveProjects(): Task<List<Project>>
+}
+
+class UserRepository {
+  +GetLabMembers(): Task<List<User>>
+}
+
+class DashboardViewModel {
+  +LabStatistics: LabStatistics
+  +ActiveProjects: List<ProjectSummary>
+  +LabMembers: List<UserSummary>
+}
+
+class LabStatistics {
+  +TotalProjects: int
+  +CompletedProjects: int
+  +ActiveUsers: int
+  +ResourceUtilization: double
+}
+
+class Project {
+  +Id: int
+  +Name: string
+  +Status: ProjectStatus
+  +StartDate: DateTime
+  +EndDate: DateTime?
+}
+
+class User {
+  +Id: int
+  +Name: string
+  +Role: UserRole
+  +Email: string
+}
+
+class ProjectSummary {
+  +Id: int
+  +Name: string
+  +Status: ProjectStatus
+}
+
+class UserSummary {
+  +Id: int
+  +Name: string
+  +Role: UserRole
+}
+
+enum ProjectStatus {
+  Active
+  Completed
+  OnHold
+}
+
+enum UserRole {
+  LabDirector
+  Researcher
+  Technician
+}
+
+DashboardController --> IServiceManager
+IServiceManager --> IDashboardService
+DashboardService ..|> IDashboardService
+DashboardService --> IRepositoryManager
+IRepositoryManager --> ILabRepository
+IRepositoryManager --> IProjectRepository
+IRepositoryManager --> IUserRepository
+LabRepository ..|> ILabRepository
+ProjectRepository ..|> IProjectRepository
+UserRepository ..|> IUserRepository
+DashboardViewModel *-- LabStatistics
+DashboardViewModel *-- ProjectSummary
+DashboardViewModel *-- UserSummary
+Project --> ProjectStatus
+User --> UserRole
+ProjectSummary --> ProjectStatus
+UserSummary --> UserRole
+
+@enduml

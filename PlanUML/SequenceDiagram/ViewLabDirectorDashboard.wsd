@@ -1,0 +1,50 @@
+@startuml
+actor "Lab Director" as LD
+participant "DashboardController" as DC
+participant "IServiceManager" as ISM
+participant "DashboardService" as DS
+participant "LabRepository" as LR
+participant "ProjectRepository" as PR
+participant "UserRepository" as UR
+participant "DashboardViewModel" as DVM
+participant "Mapper" as M
+
+LD -> DC : GET /dashboard
+activate DC
+
+DC -> ISM : DashboardService.GetDashboardData()
+activate ISM
+
+ISM -> DS : GetDashboardData()
+activate DS
+
+DS -> LR : GetLabStatistics()
+activate LR
+LR --> DS : LabStatistics
+deactivate LR
+
+DS -> PR : GetActiveProjects()
+activate PR
+PR --> DS : List<Project>
+deactivate PR
+
+DS -> UR : GetLabMembers()
+activate UR
+UR --> DS : List<User>
+deactivate UR
+
+DS -> M : Map<DashboardViewModel>()
+activate M
+M --> DS : DashboardViewModel
+deactivate M
+
+DS --> ISM : DashboardViewModel
+deactivate DS
+
+ISM --> DC : DashboardViewModel
+deactivate ISM
+
+DC --> LD : View(DashboardViewModel)
+deactivate DC
+
+@enduml

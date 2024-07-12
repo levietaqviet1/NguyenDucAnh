@@ -1,0 +1,79 @@
+@startuml
+class DashboardController {
+  +GetStudentDashboard(DashboardParameters): Task<IActionResult>
+}
+
+class DashboardParameters {
+  +StartDate: DateTime
+  +EndDate: DateTime
+  +CourseId: string
+}
+
+interface IServiceManager {
+  +StudentService: IStudentService
+  +CourseService: ICourseService
+  +GradeService: IGradeService
+  +AttendanceService: IAttendanceService
+  +AssignmentService: IAssignmentService
+  +NotificationService: INotificationService
+}
+
+interface IStudentService {
+  +GetDashboardItems(DashboardParameters): Task<(IEnumerable<StudentDashboardResponseModel>, MetaData)>
+}
+
+class StudentService {
+  -_repository: IRepositoryManager
+  -_mapper: IMapper
+  +GetDashboardItems(DashboardParameters): Task<(IEnumerable<StudentDashboardResponseModel>, MetaData)>
+}
+
+interface IStudentRepository {
+  +FindDashboardItems(DashboardParameters): Task<PagedList<StudentDashboardItem>>
+}
+
+class StudentRepository {
+  +FindDashboardItems(DashboardParameters): Task<PagedList<StudentDashboardItem>>
+}
+
+class PagedList<T> {
+  +MetaData: MetaData
+}
+
+class StudentDashboardItem {
+  +StudentId: string
+  +Name: string
+  +CourseProgress: float
+  +AverageGrade: float
+  +AttendanceRate: float
+  +UpcomingAssignments: int
+}
+
+class MetaData {
+  +CurrentPage: int
+  +TotalPages: int
+  +PageSize: int
+  +TotalCount: int
+}
+
+class StudentDashboardResponseModel {
+  +StudentId: string
+  +Name: string
+  +CourseProgress: float
+  +AverageGrade: float
+  +AttendanceRate: float
+  +UpcomingAssignments: int
+}
+
+DashboardController --> IServiceManager
+IServiceManager --> IStudentService
+StudentService ..|> IStudentService
+StudentService --> IStudentRepository
+StudentRepository ..|> IStudentRepository
+StudentRepository --> PagedList
+PagedList --> StudentDashboardItem
+PagedList --> MetaData
+DashboardParameters --|> RequestParameters
+StudentService ..> StudentDashboardResponseModel
+
+@enduml

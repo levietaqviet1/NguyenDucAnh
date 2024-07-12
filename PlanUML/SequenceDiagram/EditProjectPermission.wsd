@@ -1,0 +1,48 @@
+@startuml
+actor Client
+participant "ProjectPermissionController" as PPC
+participant "IServiceManager" as ISM
+participant "ProjectPermissionService" as PPS
+participant "ProjectPermissionRepository" as PPR
+participant "Project" as P
+participant "Mapper" as M
+
+Client -> PPC : PUT /api/projects/{projectId}/permissions
+activate PPC
+
+PPC -> ISM : ProjectPermissionService.EditProjectPermission(projectId, permissionDto)
+activate ISM
+
+ISM -> PPS : EditProjectPermission(projectId, permissionDto)
+activate PPS
+
+PPS -> PPR : GetProjectById(projectId)
+activate PPR
+PPR --> PPS : Project
+deactivate PPR
+
+PPS -> P : UpdatePermissions(permissionDto)
+activate P
+P --> PPS : Updated Project
+deactivate P
+
+PPS -> PPR : UpdateProject(project)
+activate PPR
+PPR --> PPS : void
+deactivate PPR
+
+PPS -> M : Map<ProjectPermissionResponseDto>(project)
+activate M
+M --> PPS : ProjectPermissionResponseDto
+deactivate M
+
+PPS --> ISM : ProjectPermissionResponseDto
+deactivate PPS
+
+ISM --> PPC : ProjectPermissionResponseDto
+deactivate ISM
+
+PPC --> Client : 200 OK with updated permissions
+deactivate PPC
+
+@enduml

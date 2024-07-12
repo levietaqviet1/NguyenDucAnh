@@ -1,0 +1,79 @@
+@startuml
+class ApiController {
+  +ChangePhone(ChangePhoneRequest): Task<IActionResult>
+}
+
+class ChangePhoneRequest {
+  +UserId: string
+  +NewPhone: string
+  +CurrentPassword: string
+}
+
+interface IServiceManager {
+  +AccountService: IAccountService
+  +AuthenticationService: IAuthenticationService
+  +SmsService: ISmsService
+}
+
+interface IAccountService {
+  +ChangePhone(ChangePhoneRequest): Task<ChangePhoneResult>
+}
+
+class AccountService {
+  -_repository: IRepositoryManager
+  -_phoneValidator: IPhoneValidator
+  -_smsService: ISmsService
+  +ChangePhone(ChangePhoneRequest): Task<ChangePhoneResult>
+  -GeneratePhoneVerificationCode(): string
+  -SendVerificationSMS(string, string): void
+}
+
+interface IAccountRepository {
+  +UpdatePhone(string, string): Task<Account>
+}
+
+class AccountRepository {
+  +UpdatePhone(string, string): Task<Account>
+}
+
+interface IPhoneValidator {
+  +ValidatePhone(string): bool
+}
+
+class PhoneValidator {
+  +ValidatePhone(string): bool
+}
+
+interface ISmsService {
+  +SendSms(string, string): Task
+}
+
+class SmsService {
+  +SendSms(string, string): Task
+}
+
+class Account {
+  +UserId: string
+  +Phone: string
+  +PasswordHash: string
+}
+
+class ChangePhoneResult {
+  +Success: bool
+  +Message: string
+  +VerificationRequired: bool
+}
+
+ApiController --> IServiceManager
+IServiceManager --> IAccountService
+AccountService ..|> IAccountService
+AccountService --> IAccountRepository
+AccountRepository ..|> IAccountRepository
+AccountService --> IPhoneValidator
+PhoneValidator ..|> IPhoneValidator
+AccountService --> ISmsService
+SmsService ..|> ISmsService
+AccountRepository --> Account
+ApiController --> ChangePhoneRequest
+AccountService --> ChangePhoneResult
+@enduml

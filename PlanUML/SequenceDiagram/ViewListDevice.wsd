@@ -1,0 +1,47 @@
+@startuml
+actor Client
+participant "API Controller" as Controller
+participant "ServiceManager" as ServiceManager
+participant "DeviceService" as DeviceService
+participant "DeviceRepository" as DeviceRepository
+participant "Mapper" as Mapper
+database "Database" as DB
+
+Client -> Controller : GET /api/devices
+activate Controller
+
+Controller -> ServiceManager : DeviceService.GetDevices(param)
+activate ServiceManager
+
+ServiceManager -> DeviceService : GetDevices(param)
+activate DeviceService
+
+DeviceService -> DeviceRepository : FindDevices(param)
+activate DeviceRepository
+
+DeviceRepository -> DeviceRepository : GetByCondition()
+DeviceRepository -> DeviceRepository : ApplyFilters(param)
+DeviceRepository -> DB : Query devices
+activate DB
+DB --> DeviceRepository : Return devices data
+deactivate DB
+
+DeviceRepository -> DeviceRepository : Create PagedList<Device>
+DeviceRepository --> DeviceService : Return PagedList<Device>
+deactivate DeviceRepository
+
+DeviceService -> Mapper : Map<DeviceResponseModel>(devices)
+activate Mapper
+Mapper --> DeviceService : Return mapped data
+deactivate Mapper
+
+DeviceService --> ServiceManager : Return (data, metadata)
+deactivate DeviceService
+
+ServiceManager --> Controller : Return (data, metadata)
+deactivate ServiceManager
+
+Controller -> Controller : Add X-Pagination header
+Controller --> Client : Return OK with device list
+deactivate Controller
+@enduml
