@@ -1,0 +1,72 @@
+@startuml
+class ApiController {
+  +AddAccount(AccountCreationDto): Task<IActionResult>
+}
+
+class AccountCreationDto {
+  +Username: string
+  +Email: string
+  +Password: string
+  +Role: string
+}
+
+interface IServiceManager {
+  +AccountService: IAccountService
+  +AuthenticationService: IAuthenticationService
+  +MailService: IMailService
+  +FileService: IFileService
+  +NewsService: INewsService
+  +NotificationService: INotificationService
+  +ScheduleService: IScheduleService
+  +TaskService: ITaskService
+  +TaskListService: ITaskListService
+  +ProjectService: IProjectService
+  +MemberService: IMemberService
+}
+
+interface IAccountService {
+  +AddAccount(AccountCreationDto): Task<AccountResponseDto>
+}
+
+class AccountService {
+  -_repository: IRepositoryManager
+  -_mapper: IMapper
+  +AddAccount(AccountCreationDto): Task<AccountResponseDto>
+}
+
+interface IAccountRepository {
+  +AddAccount(Account): Task<Account>
+}
+
+class AccountRepository {
+  +AddAccount(Account): Task<Account>
+}
+
+class Account {
+  +Id: string
+  +Username: string
+  +Email: string
+  +PasswordHash: string
+  +Role: string
+  +IsVerified: bool
+  +CreatedAt: DateTime
+}
+
+class AccountResponseDto {
+  +Id: string
+  +Username: string
+  +Email: string
+  +Role: string
+  +IsVerified: bool
+  +CreatedAt: DateTime
+}
+
+ApiController --> IServiceManager
+IServiceManager --> IAccountService
+AccountService ..|> IAccountService
+AccountService --> IAccountRepository
+AccountRepository ..|> IAccountRepository
+AccountRepository --> Account
+AccountService --> AccountResponseDto
+ApiController --> AccountCreationDto
+@enduml

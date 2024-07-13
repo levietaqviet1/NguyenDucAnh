@@ -1,0 +1,53 @@
+@startuml
+class ApiController {
+  +GetAccountDetail(string id): Task<IActionResult>
+}
+
+interface IServiceManager {
+  +AccountService: IAccountService
+}
+
+interface IAccountService {
+  +GetAccountById(string id): Task<AccountDetailResponseModel>
+}
+
+class AccountService {
+  -_repository: IRepositoryManager
+  -_mapper: IMapper
+  +GetAccountById(string id): Task<AccountDetailResponseModel>
+}
+
+interface IAccountRepository {
+  +GetAccountById(string id): Task<Account>
+}
+
+class AccountRepository {
+  +GetAccountById(string id): Task<Account>
+}
+
+class Account {
+  +Id: string
+  +Username: string
+  +Email: string
+  +IsVerified: bool
+  +CreatedAt: DateTime
+  +UpdatedAt: DateTime
+}
+
+class AccountDetailResponseModel {
+  +Id: string
+  +Username: string
+  +Email: string
+  +IsVerified: bool
+  +CreatedAt: DateTime
+  +UpdatedAt: DateTime
+}
+
+ApiController --> IServiceManager
+IServiceManager --> IAccountService
+AccountService ..|> IAccountService
+AccountService --> IAccountRepository
+AccountRepository ..|> IAccountRepository
+AccountRepository --> Account
+AccountService --> AccountDetailResponseModel
+@enduml

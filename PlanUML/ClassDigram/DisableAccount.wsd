@@ -1,0 +1,48 @@
+@startuml
+class ApiController {
+  +DisableAccount(string accountId): Task<IActionResult>
+}
+
+interface IServiceManager {
+  +AccountService: IAccountService
+}
+
+interface IAccountService {
+  +DisableAccount(string accountId): Task<bool>
+}
+
+class AccountService {
+  -_repository: IRepositoryManager
+  -_logger: ILoggerManager
+  +DisableAccount(string accountId): Task<bool>
+}
+
+interface IAccountRepository {
+  +GetAccountById(string accountId): Task<Account>
+  +UpdateAccount(Account account): Task
+}
+
+class AccountRepository {
+  +GetAccountById(string accountId): Task<Account>
+  +UpdateAccount(Account account): Task
+}
+
+class Account {
+  +Id: string
+  +IsDisabled: bool
+  +DisabledAt: DateTime?
+}
+
+class DisableAccountResult {
+  +Success: bool
+  +Message: string
+}
+
+ApiController --> IServiceManager
+IServiceManager --> IAccountService
+AccountService ..|> IAccountService
+AccountService --> IAccountRepository
+AccountRepository ..|> IAccountRepository
+AccountRepository --> Account
+AccountService --> DisableAccountResult
+@enduml

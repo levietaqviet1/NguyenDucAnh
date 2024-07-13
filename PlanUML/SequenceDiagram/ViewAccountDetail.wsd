@@ -1,0 +1,43 @@
+@startuml
+actor Client
+participant "API Controller" as Controller
+participant "ServiceManager" as ServiceManager
+participant "AccountService" as AccountService
+participant "AccountRepository" as AccountRepository
+participant "Mapper" as Mapper
+database "Database" as DB
+
+Client -> Controller : GET /api/account/{id}
+activate Controller
+
+Controller -> ServiceManager : AccountService.GetAccountById(id)
+activate ServiceManager
+
+ServiceManager -> AccountService : GetAccountById(id)
+activate AccountService
+
+AccountService -> AccountRepository : GetAccountById(id)
+activate AccountRepository
+
+AccountRepository -> DB : Query account by id
+activate DB
+DB --> AccountRepository : Return account data
+deactivate DB
+
+AccountRepository --> AccountService : Return Account
+deactivate AccountRepository
+
+AccountService -> Mapper : Map<AccountDetailResponseModel>(account)
+activate Mapper
+Mapper --> AccountService : Return mapped data
+deactivate Mapper
+
+AccountService --> ServiceManager : Return AccountDetailResponseModel
+deactivate AccountService
+
+ServiceManager --> Controller : Return AccountDetailResponseModel
+deactivate ServiceManager
+
+Controller --> Client : Return OK with account details
+deactivate Controller
+@enduml

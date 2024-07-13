@@ -1,0 +1,50 @@
+@startuml
+actor Client
+participant "API Controller" as Controller
+participant "ServiceManager" as ServiceManager
+participant "AccountService" as AccountService
+participant "AccountRepository" as AccountRepository
+participant "Mapper" as Mapper
+database "Database" as DB
+
+Client -> Controller : POST /api/add-account
+activate Controller
+
+Controller -> Controller : Validate input
+
+Controller -> ServiceManager : AccountService.AddAccount(accountDto)
+activate ServiceManager
+
+ServiceManager -> AccountService : AddAccount(accountDto)
+activate AccountService
+
+AccountService -> Mapper : Map<Account>(accountDto)
+activate Mapper
+Mapper --> AccountService : Return mapped Account
+deactivate Mapper
+
+AccountService -> AccountRepository : AddAccount(account)
+activate AccountRepository
+
+AccountRepository -> DB : Insert new account
+activate DB
+DB --> AccountRepository : Confirm insertion
+deactivate DB
+
+AccountRepository --> AccountService : Return added Account
+deactivate AccountRepository
+
+AccountService -> Mapper : Map<AccountResponseDto>(addedAccount)
+activate Mapper
+Mapper --> AccountService : Return mapped response
+deactivate Mapper
+
+AccountService --> ServiceManager : Return AccountResponseDto
+deactivate AccountService
+
+ServiceManager --> Controller : Return AccountResponseDto
+deactivate ServiceManager
+
+Controller --> Client : Return Created with account data
+deactivate Controller
+@enduml
