@@ -1,0 +1,57 @@
+@startuml
+actor Client
+participant "API Controller" as Controller
+participant "ServiceManager" as ServiceManager
+participant "AccountService" as AccountService
+participant "AccountRepository" as AccountRepository
+participant "LoggerManager" as Logger
+database "Database" as DB
+
+Client -> Controller : POST /api/disable-account/{accountId}
+activate Controller
+
+Controller -> ServiceManager : AccountService.DisableAccount(accountId)
+activate ServiceManager
+
+ServiceManager -> AccountService : DisableAccount(accountId)
+activate AccountService
+
+AccountService -> AccountRepository : GetAccountById(accountId)
+activate AccountRepository
+
+AccountRepository -> DB : Query account
+activate DB
+DB --> AccountRepository : Return account data
+deactivate DB
+
+AccountRepository --> AccountService : Return Account
+deactivate AccountRepository
+
+alt Account not found
+    AccountService -> Logger : LogError("Account not found")
+    AccountService --> ServiceManager : Return DisableAccountResult(false, "Account not found")
+else Account already disabled
+    AccountService -> Logger : LogInfo("Account already disabled")
+    AccountService --> ServiceManager : Return DisableAccountResult(false, "Account already disabled")
+else Account active
+    AccountService -> AccountService : Set account.IsDisabled = true
+    AccountService -> AccountService : Set account.DisabledAt = DateTime.UtcNow
+    AccountService -> AccountRepository : UpdateAccount(account)
+    activate AccountRepository
+    AccountRepository -> DB : Update account
+    activate DB
+    DB --> AccountRepository : Confirm update
+    deactivate DB
+    AccountRepository --> AccountService : Update confirmed
+    deactivate AccountRepository
+    AccountService -> Logger : LogInfo("Account disabled successfully")
+    AccountService --> ServiceManager : Return DisableAccountResult(true, "Account disabled successfully")
+end
+
+ServiceManager --> Controller : Return DisableAccountResult
+deactivate AccountService
+deactivate ServiceManager
+
+Controller --> Client : Return IActionResult (based on DisableAccountResult)
+deactivate Controller
+@enduml
